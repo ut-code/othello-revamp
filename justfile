@@ -8,3 +8,7 @@ build: build-wasm
 copy-wasm:
     if [ -d web/src/wasm ]; then rm -r web/src/wasm; fi
     cp wasm/pkg web/src/wasm -r
+
+test: test-wasm
+test-wasm:
+    cd wasm; cargo test
