@@ -14,7 +14,7 @@
     in
     {
       devShell = pkgs.mkShell {
-        name = "WASM dev-shell";
+        name = "wasm dev-shell";
         buildInputs = with pkgs; [
           nodejs-slim_latest
           pnpm
