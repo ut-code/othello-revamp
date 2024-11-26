@@ -8,7 +8,7 @@ static EIGHT_DIRECTIONS: [(isize, isize); 8] = [
     (1, 1),
     (0, 1),
     (-1, 1),
-    (1, 0),
+    (-1, 0),
 ];
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Point {
@@ -268,10 +268,30 @@ mod test_board {
             ww.bbw
             ww.bbb
         ";
-        let mut output = Board::decode(input, 6).unwrap();
-        output.place(Piece::Black, Point::new(2, 2)).unwrap();
+        let mut board = Board::decode(input, 6).unwrap();
+        board.place(Piece::Black, Point::new(2, 2)).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
-        assert_eq!(output, expected);
+        assert_eq!(board, expected);
+        let input = "
+            b.b.b.
+            .www..
+            bw.wwb
+            .www..
+            b.w.w.
+            ..b..b
+        ";
+        let expected = "
+            b.b.b.
+            .bbb..
+            bbbbbb
+            .bbb..
+            b.b.b.
+            ..b..b
+        ";
+        let mut board = Board::decode(input, 6).unwrap();
+        board.place(Piece::Black, Point::new(2, 2)).unwrap();
+        let expected = Board::decode(expected, 6).unwrap();
+        assert_eq!(board, expected);
     }
 }
 
@@ -297,19 +317,29 @@ pub enum DecodeError {
 
 // returns pieces that were flipped
 pub fn flip_in_direction(b: &mut Board, at: Point, piece: Piece, direction: Direction) -> usize {
-    let mut i: usize = 0;
-    loop {
-        let Ok(pos) = at.move_for(direction.times(i as isize + 1)) else {
-            break;
+    let mut lim: usize = 0;
+    let can_flip = loop {
+        let Ok(pos) = at.move_for(direction.times(lim as isize + 1)) else {
+            break false;
         };
         let Ok(cell) = b.get(pos) else {
-            break;
+            break false;
         };
-        if cell != piece.flip().into() {
-            break;
+        if cell == Cell::Empty {
+            break false;
         }
-        b.set(pos, cell.flip()).unwrap();
-        i += 1;
+        if cell == piece.into() {
+            break true;
+        }
+        lim += 1;
+    };
+    if !can_flip {
+        return 0;
     }
-    return i;
+    for i in 0..lim {
+        let pos = at.move_for(direction.times(i as isize + 1)).unwrap();
+        let cell = b.get(pos).unwrap();
+        b.set(pos, cell.flip()).unwrap();
+    }
+    return lim;
 }
