@@ -1,7 +1,9 @@
-# Package Managers
-package-lock.json
+# Lockfile
 pnpm-lock.yaml
-yarn.lock
+flake.lock
 
 # out
-src/wasm
+web/.svelte-kit
+web/src/wasm
+wasm/target
+wasm/pkg
