@@ -1,0 +1,21 @@
+name: Web CI
+on:
+  pull_request:
+  push: { branches: [ main ] }
+
+jobs:
+  web-lint:
+    name: "Lint via Biome"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: biomejs/setup-biome@v2
+      - run: biome lint
+  web-fmt:
+    name: "Format via Prettier"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prettier . --check

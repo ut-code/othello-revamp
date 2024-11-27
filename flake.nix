@@ -21,7 +21,7 @@
           just
           toolchain
           wasm-pack
-          cargo-generate
+          biome
         ];
       };
     });

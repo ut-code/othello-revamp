@@ -1,0 +1,24 @@
+name: WASM CI
+on:
+  pull_request:
+  push: { branches: [ main ] }
+
+jobs:
+  wasm:
+    name: "WASM Checks"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./wasm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: actions/cache@v4
+        with:
+          path: |
+            wasm/target
+          key: cargo-cache-${{ github.job }}-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+      - run: cargo build
+      - run: cargo test --all-features
+      - uses: jetli/wasm-pack-action@v0.4.0
+      - run: wasm-pack build --release
