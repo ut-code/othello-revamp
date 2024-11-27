@@ -157,7 +157,7 @@ impl Board {
     }
 
     /// ```rust
-    /// use othello_wasm::othello::Board;
+    /// use boardgame_ai_wasm::othello::Board;
     /// let serialized = "
     /// ......
     /// ..w...
