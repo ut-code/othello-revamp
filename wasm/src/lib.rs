@@ -1,4 +1,5 @@
-pub mod othello;
+pub mod ai;
+pub mod rules;
 mod utils;
 
 use utils::set_panic_hook;

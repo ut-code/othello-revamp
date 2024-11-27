@@ -98,15 +98,16 @@ impl From<Cell> for Option<Piece> {
     }
 }
 
-// TODO: impl Debug
 #[derive(Clone, PartialEq, Eq)]
 pub struct Board {
-    rows: Vec<Vec<Cell>>,
+    size: usize,
+    data: Vec<Vec<Cell>>,
 }
 impl Board {
     /// primitive opration. doesn't do anything other than setting the pice.
+    /// returns Err iff at is out of boundary
     pub fn set(&mut self, at: Point, cell: impl Into<Cell>) -> Result<(), OutOfBoundaryError> {
-        let row = self.rows.get_mut(at.y).ok_or(OutOfBoundaryError())?;
+        let row = self.data.get_mut(at.y).ok_or(OutOfBoundaryError())?;
         if row.len() <= at.x {
             return Err(OutOfBoundaryError());
         }
@@ -114,31 +115,32 @@ impl Board {
         Ok(())
     }
     pub fn get(&self, at: Point) -> Result<Cell, OutOfBoundaryError> {
-        self.rows
+        self.data
             .get(at.y)
             .ok_or(OutOfBoundaryError())?
             .get(at.x)
             .ok_or(OutOfBoundaryError())
             .copied()
     }
-    pub fn new(rows: usize) -> Self {
-        assert!(rows % 2 == 0, "rows must be divisible by 2");
-        assert!(rows < 255, "rows should not be larger than 255");
+    pub fn new(size: usize) -> Self {
+        assert!(size % 2 == 0, "size must be divisible by 2");
+        assert!(size < 255, "size should not be larger than 255");
         let mut new = Self {
-            rows: vec![vec![Cell::Empty; rows]; rows],
+            size,
+            data: vec![vec![Cell::Empty; size]; size],
         };
-        new.set(Point::new(rows / 2 - 1, rows / 2 - 1), Piece::Black)
+        new.set(Point::new(size / 2 - 1, size / 2 - 1), Piece::Black)
             .expect("this shouldn't happen");
-        new.set(Point::new(rows / 2 - 1, rows / 2), Piece::White)
+        new.set(Point::new(size / 2 - 1, size / 2), Piece::White)
             .expect("this shouldn't happen");
-        new.set(Point::new(rows / 2, rows / 2 - 1), Piece::White)
+        new.set(Point::new(size / 2, size / 2 - 1), Piece::White)
             .expect("this shouldn't happen");
-        new.set(Point::new(rows / 2, rows / 2), Piece::Black)
+        new.set(Point::new(size / 2, size / 2), Piece::Black)
             .expect("this shouldn't happen");
         new
     }
-    /// flips pieces accordingly.
-    pub fn place(&mut self, piece: Piece, at: Point) -> Result<(), PlaceError> {
+    /// flips pieces accordingly. returns Ok(count of flipped pieces) or Err(PlaceError).
+    pub fn place(&mut self, piece: Piece, at: Point) -> Result<usize, PlaceError> {
         let Ok(prev) = self.get(at) else {
             return Err(PlaceError::OutOfBoundary);
         };
@@ -153,11 +155,25 @@ impl Board {
         if count == 0 {
             return Err(PlaceError::NoPiecesChanged);
         }
-        Ok(())
+        Ok(count)
+    }
+    pub fn can_place(&self, at: Point, piece: Piece) -> bool {
+        let Ok(prev) = self.get(at) else {
+            return false; // can't place when it's out of the board
+        };
+        if prev != Cell::Empty {
+            return false; // can't place when it's already occupied
+        }
+        for dir in EIGHT_DIRECTIONS.iter().map(|&(x, y)| Direction { x, y }) {
+            if can_flip_in_direction(self, at, piece, dir) {
+                return true;
+            }
+        }
+        return false; // can't place when no pieces flip after placing
     }
 
     /// ```rust
-    /// use boardgame_ai_wasm::othello::Board;
+    /// use boardgame_ai_wasm::rules::othello::Board;
     /// let serialized = "
     /// ......
     /// ..w...
@@ -166,7 +182,8 @@ impl Board {
     /// ...b..
     /// ......
     /// ";
-    /// assert!(Board::decode(serialized, 6).is_ok());
+    /// let board = Board::decode(serialized, 6).unwrap();
+    /// assert_eq!(board.encode(), serialized);
     /// ```
     pub fn decode(serialized: &str, board_size: usize) -> Result<Board, DecodeError> {
         let rows: Vec<_> = serialized
@@ -187,7 +204,7 @@ impl Board {
                 let row = row
                     .chars()
                     .map(|char| match char {
-                        '.' => Ok(Cell::Empty),
+                        '.' | '_' => Ok(Cell::Empty), // _ can be used to emphasize cells
                         'w' => Ok(Cell::White),
                         'b' => Ok(Cell::Black),
                         _ => Err(DecodeError::UnknownChar(char)),
@@ -204,12 +221,19 @@ impl Board {
                 }
             })
             .collect::<Result<Vec<_>, _>>()?;
-        Ok(Board { rows })
+        assert_eq!(rows.len(), board_size);
+        for row in rows.iter() {
+            assert_eq!(row.len(), board_size);
+        }
+        Ok(Board {
+            size: board_size,
+            data: rows,
+        })
     }
     pub fn encode(&self) -> String {
         "\n".to_string()
             + &self
-                .rows
+                .data
                 .iter()
                 .map(|row| {
                     row.iter()
@@ -224,6 +248,46 @@ impl Board {
                 .collect::<Vec<String>>()
                 .join("\n")
             + "\n"
+    }
+    pub fn score(&self, player: Piece) -> usize {
+        let player_cell: Cell = player.into();
+        self.data
+            .iter()
+            .map(|row| row.iter().filter(|&&cell| cell == player_cell).count())
+            .sum()
+    }
+
+    /// ```rust
+    /// use boardgame_ai_wasm::rules::othello::*;
+    /// let serialized = "
+    /// ......
+    /// .bbb..
+    /// ._w_..
+    /// .bwb..
+    /// .b_b..
+    /// ......
+    /// ";
+    /// let board = Board::decode(serialized, 6).unwrap();
+    /// let expected = vec![
+    ///   Point::new(1, 2),
+    ///   Point::new(2, 4),
+    ///   Point::new(3, 2),
+    /// ];
+    /// assert_eq!(board.placable(Piece::Black), expected);
+    /// ```
+    pub fn placable(&self, next: Piece) -> Vec<Point> {
+        // yes, this is O(n^2) in time, but does it really matter if the size of the board (=n) is less than 255
+        // and it's Rust (not something slow and memory intensive like JS or Python)?
+        let mut ret = Vec::new();
+        for x in 0..self.size {
+            for y in 0..self.size {
+                let point = Point::new(x, y);
+                if self.can_place(point, next) {
+                    ret.push(point);
+                }
+            }
+        }
+        ret
     }
 }
 impl fmt::Debug for Board {
@@ -250,7 +314,33 @@ mod test_board {
         assert!(decoded.is_ok(), "{:?}", decoded);
     }
     #[test]
-    fn place() {
+    fn place_basic() {
+        let input = "
+            .wwwbw
+            ......
+            ......
+            ......
+            ......
+            ......
+        ";
+        let expected = "
+            bbbbbw
+            ......
+            ......
+            ......
+            ......
+            ......
+        ";
+        let mut board = Board::decode(input, 6).unwrap();
+        let expected = Board::decode(expected, 6).unwrap();
+
+        let flipped = board.place(Piece::Black, Point::new(0, 0)).unwrap();
+        assert_eq!(board, expected);
+        assert_eq!(flipped, 3);
+    }
+
+    #[test]
+    fn place_complex() {
         let input = "
             bbw.bb
             .wwbww
@@ -268,9 +358,15 @@ mod test_board {
             ww.bbb
         ";
         let mut board = Board::decode(input, 6).unwrap();
-        board.place(Piece::Black, Point::new(2, 2)).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
+
+        let flipped = board.place(Piece::Black, Point::new(2, 2)).unwrap();
+
         assert_eq!(board, expected);
+        assert_eq!(flipped, 5);
+    }
+    #[test]
+    fn place_eight_directions() {
         let input = "
             b.b.b.
             .www..
@@ -288,9 +384,12 @@ mod test_board {
             ..b..b
         ";
         let mut board = Board::decode(input, 6).unwrap();
-        board.place(Piece::Black, Point::new(2, 2)).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
+
+        let flipped = board.place(Piece::Black, Point::new(2, 2)).unwrap();
+
         assert_eq!(board, expected);
+        assert_eq!(flipped, 11);
     }
 }
 
@@ -316,29 +415,41 @@ pub enum DecodeError {
 
 // returns pieces that were flipped
 pub fn flip_in_direction(b: &mut Board, at: Point, piece: Piece, direction: Direction) -> usize {
-    let mut lim: usize = 0;
-    let can_flip = loop {
-        let Ok(pos) = at.move_for(direction.times(lim as isize + 1)) else {
+    if !can_flip_in_direction(b, at, piece, direction) {
+        return 0;
+    };
+    let mut flipped = 0;
+    loop {
+        let Ok(pos) = at.move_for(direction.times(flipped as isize + 1)) else {
+            break;
+        };
+        let Ok(cell) = b.get(pos) else {
+            break;
+        };
+        if cell.flip() != piece.into() {
+            break;
+        }
+        b.set(pos, piece).unwrap(); // it's safe to unwrap this
+        flipped += 1;
+    }
+    flipped
+}
+// returns pieces that would be flipped, without flipping the pieces
+pub fn can_flip_in_direction(b: &Board, at: Point, piece: Piece, direction: Direction) -> bool {
+    let mut flipping_pieces: usize = 0;
+    loop {
+        let Ok(pos) = at.move_for(direction.times(flipping_pieces as isize + 1)) else {
             break false;
         };
         let Ok(cell) = b.get(pos) else {
             break false;
         };
-        if cell == Cell::Empty {
-            break false;
-        }
-        if cell == piece.into() {
+        if cell == piece.into() && flipping_pieces > 0 {
             break true;
         }
-        lim += 1;
-    };
-    if !can_flip {
-        return 0;
+        if cell != piece.flip().into() {
+            break false;
+        }
+        flipping_pieces += 1;
     }
-    for i in 0..lim {
-        let pos = at.move_for(direction.times(i as isize + 1)).unwrap();
-        let cell = b.get(pos).unwrap();
-        b.set(pos, cell.flip()).unwrap();
-    }
-    lim
 }
