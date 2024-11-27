@@ -1,26 +1,21 @@
-name: Web CI
+name: Root CI
 on:
   pull_request:
   push: { branches: [main] }
-defaults: 
-  run: 
-    working-directory: "web"
 
 jobs:
-  build:
-    name: "Build"
+  lint:
+    name: "Lint via Biome"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: biomejs/setup-biome@v2
+      - run: biome check
+  fmt:
+    name: "Format via Prettier"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
-  check:
-    name: "Check via svelte-check and TSC"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run check
-
+      - run: pnpm prettier . --check
