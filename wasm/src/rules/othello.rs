@@ -178,19 +178,18 @@ impl Board {
         }
         Ok(count)
     }
-    pub fn can_place(&self, at: Point, piece: Piece) -> bool {
+    pub fn count_flips(&self, at: Point, piece: Piece) -> usize {
         let Ok(prev) = self.get(at) else {
-            return false; // can't place when it's out of the board
+            return 0; // can't place when it's out of the board
         };
         if prev != Cell::Empty {
-            return false; // can't place when it's already occupied
+            return 0; // can't place when it's already occupied
         }
+        let mut flippable = 0;
         for dir in EIGHT_DIRECTIONS.iter().map(|&(x, y)| Direction { x, y }) {
-            if can_flip_in_direction(self, at, piece, dir) {
-                return true;
-            }
+            flippable += count_planned_flip_in_direction(self, at, piece, dir);
         }
-        false // can't place when no pieces flip after placing
+        flippable
     }
 
     /// ```rust
@@ -294,16 +293,16 @@ impl Board {
     ///   Point::new(2, 4),
     ///   Point::new(3, 2),
     /// ];
-    /// assert_eq!(board.placable(Piece::Black), expected);
+    /// assert_eq!(board.placeable(Piece::Black), expected);
     /// ```
-    pub fn placable(&self, next: Piece) -> Vec<Point> {
+    pub fn placeable(&self, next: Piece) -> Vec<Point> {
         // yes, this is O(n^2) in time, but does it really matter if the size of the board (=n) is less than 255
         // and it's Rust (not something slow and memory intensive like JS or Python)?
         let mut ret = Vec::new();
         for x in 0..self.size {
             for y in 0..self.size {
                 let point = Point::new(x, y);
-                if self.can_place(point, next) {
+                if self.count_flips(point, next) > 0 {
                     ret.push(point);
                 }
             }
@@ -415,6 +414,27 @@ mod test_board {
         assert_eq!(board, expected);
         assert_eq!(flipped, 11);
     }
+    #[test]
+    fn count_flip() {
+        let table = "
+            .bw.bb
+            b.bbbw
+            b.wwbw
+            wbbbb.
+            ww.bbw
+            ww.bbw
+        ";
+        let table = Board::decode(table, 6).unwrap();
+        assert_eq!(table.count_flips(Point::new(0, 0), Piece::White), 3);
+        assert_eq!(table.count_flips(Point::new(1, 1), Piece::White), 3);
+        assert_eq!(table.count_flips(Point::new(5, 3), Piece::White), 6);
+        assert_eq!(table.count_flips(Point::new(5, 3), Piece::Black), 2);
+        assert_eq!(table.count_flips(Point::new(3, 0), Piece::White), 2);
+        assert_eq!(table.count_flips(Point::new(2, 4), Piece::White), 5);
+        // should not overwrite existing pieces
+        assert_eq!(table.count_flips(Point::new(3, 3), Piece::White), 0);
+        assert_eq!(table.count_flips(Point::new(2, 1), Piece::White), 0);
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -439,7 +459,7 @@ pub enum DecodeError {
 
 // returns pieces that were flipped
 pub fn flip_in_direction(b: &mut Board, at: Point, piece: Piece, direction: Direction) -> usize {
-    if !can_flip_in_direction(b, at, piece, direction) {
+    if count_planned_flip_in_direction(b, at, piece, direction) == 0 {
         return 0;
     };
     let mut flipped = 0;
@@ -459,20 +479,25 @@ pub fn flip_in_direction(b: &mut Board, at: Point, piece: Piece, direction: Dire
     flipped
 }
 // returns pieces that would be flipped, without flipping the pieces
-pub fn can_flip_in_direction(b: &Board, at: Point, piece: Piece, direction: Direction) -> bool {
+pub fn count_planned_flip_in_direction(
+    b: &Board,
+    at: Point,
+    piece: Piece,
+    direction: Direction,
+) -> usize {
     let mut flipping_pieces: usize = 0;
     loop {
         let Ok(pos) = at.move_for(direction.times(flipping_pieces as isize + 1)) else {
-            break false;
+            return 0;
         };
         let Ok(cell) = b.get(pos) else {
-            break false;
+            return 0;
         };
         if cell == piece.into() && flipping_pieces > 0 {
-            break true;
+            return flipping_pieces;
         }
         if cell != piece.flip().into() {
-            break false;
+            return 0;
         }
         flipping_pieces += 1;
     }
