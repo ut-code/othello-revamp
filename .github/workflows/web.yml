@@ -4,19 +4,37 @@ on:
   push: { branches: [main] }
 
 jobs:
-  web-lint:
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    defaults: { run: {working-directory: "web"}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+  lint:
     name: "Lint via Biome"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: biomejs/setup-biome@v2
       - run: biome check
-  web-fmt:
+  fmt:
     name: "Format via Prettier"
     runs-on: ubuntu-latest
-    defaults: { run: { working-directory: "web" } }
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - run: pnpm install --frozen-lockfile
       - run: pnpm prettier . --check
+  check:
+    name: "Check via svelte-check and TSC"
+    runs-on: ubuntu-latest
+    defaults: { run: {working-directory: "web"}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+

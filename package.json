@@ -1,0 +1,15 @@
+{
+  "name": "othello-revamp-mono",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "format": "prettier --write .",
+    "lint": "prettier --check ."
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.4.1",
+    "prettier-plugin-svelte": "^3.2.6",
+    "prettier-plugin-tailwindcss": "^0.6.5"
+  }
+}
