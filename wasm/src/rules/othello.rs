@@ -169,11 +169,11 @@ impl Board {
                 return true;
             }
         }
-        return false; // can't place when no pieces flip after placing
+        false // can't place when no pieces flip after placing
     }
 
     /// ```rust
-    /// use boardgame_ai_wasm::rules::othello::Board;
+    /// use boardgame_ai::rules::othello::Board;
     /// let serialized = "
     /// ......
     /// ..w...
@@ -258,7 +258,7 @@ impl Board {
     }
 
     /// ```rust
-    /// use boardgame_ai_wasm::rules::othello::*;
+    /// use boardgame_ai::rules::othello::*;
     /// let serialized = "
     /// ......
     /// .bbb..
