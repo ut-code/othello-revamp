@@ -22,7 +22,7 @@ importers:
         version: 0.5.15(tailwindcss@3.4.15)
       wasm:
         specifier: file:./src/wasm
-        version: wasm-tmpl@file:src/wasm
+        version: othello-wasm@file:src/wasm
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: ^3.0.0
@@ -43,7 +43,7 @@ importers:
         specifier: ^0.11.2
         version: 0.11.2(svelte@5.2.8)
       prettier:
-        specifier: ^3.3.2
+        specifier: ^3.4.0
         version: 3.4.0
       prettier-plugin-svelte:
         specifier: ^3.2.6
@@ -858,6 +858,9 @@ packages:
     resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
     engines: {node: '>= 6'}
 
+  othello-wasm@file:src/wasm:
+    resolution: {directory: src/wasm, type: directory}
+
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
@@ -1197,9 +1200,6 @@ packages:
     peerDependenciesMeta:
       vite:
         optional: true
-
-  wasm-tmpl@file:src/wasm:
-    resolution: {directory: src/wasm, type: directory}
 
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
@@ -1852,6 +1852,8 @@ snapshots:
 
   object-hash@3.0.0: {}
 
+  othello-wasm@file:src/wasm: {}
+
   package-json-from-dist@1.0.1: {}
 
   path-key@3.1.1: {}
@@ -2154,8 +2156,6 @@ snapshots:
   vitefu@1.0.3(vite@5.4.11):
     optionalDependencies:
       vite: 5.4.11
-
-  wasm-tmpl@file:src/wasm: {}
 
   which@2.0.2:
     dependencies:

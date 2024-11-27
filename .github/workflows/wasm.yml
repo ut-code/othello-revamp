@@ -1,7 +1,7 @@
 name: WASM CI
 on:
   pull_request:
-  push: { branches: [ main ] }
+  push: { branches: [main] }
 
 jobs:
   wasm:

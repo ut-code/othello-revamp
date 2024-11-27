@@ -1,7 +1,7 @@
 name: Web CI
 on:
   pull_request:
-  push: { branches: [ main ] }
+  push: { branches: [main] }
 
 jobs:
   web-lint:
@@ -10,10 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: biomejs/setup-biome@v2
-      - run: biome lint
+      - run: biome check
   web-fmt:
     name: "Format via Prettier"
     runs-on: ubuntu-latest
+    defaults: { run: { working-directory: "web" } }
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
