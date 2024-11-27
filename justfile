@@ -1,3 +1,5 @@
+set export := true
+NODE_OPTIONS := "--experimental-wasm-modules"
 build-wasm:
     cd wasm; wasm-pack build
 build-web:
@@ -12,3 +14,8 @@ copy-wasm:
 test: test-wasm
 test-wasm:
     cd wasm; cargo test
+watch:
+    @# Node.js の SSR で必要。
+    cd web; pnpm dev
+preview:
+    NODE_OPTIONS=--experimental-wasm-modules cd web; pnpm preview

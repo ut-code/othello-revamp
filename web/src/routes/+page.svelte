@@ -1,7 +1,7 @@
 <script lang="ts">
   // @ts-ignore
-  import { greet } from "wasm?init";
-  async function onclick() {
+  import { greet } from "wasm";
+  function onclick() {
     greet();
   }
 </script>
