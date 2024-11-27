@@ -5,15 +5,19 @@ pre-commit:
       tags: web format
       glob: "*"
       run: pnpm prettier --write --ignore-unknown -- {staged_files}
+      stage_fixed: true
     biome:
       tags: web lint
       glob: "*"
       run: biome check --fix --no-errors-on-unmatched --files-ignore-unknown=true -- {staged_files}
+      stage_fixed: true
     rustfmt:
       tags: rust format
       glob: "{wasm/*}"
       run: cd wasm; cargo fmt
+      stage_fixed: true
     clippy:
       tags: rust lint
       glob: "*.go"
       run: cd wasm; cargo clippy --fix --allow-dirty -- -Dwarnings
+      stage_fixed: true
