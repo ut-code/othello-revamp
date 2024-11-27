@@ -4,7 +4,7 @@ pre-commit:
     prettier:
       tags: web format
       glob: "*"
-      run: pnpm prettier --write -- {staged_files}
+      run: pnpm prettier --write --ignore-unknown -- {staged_files}
       stage_fixed: true
     biome:
       tags: web lint
