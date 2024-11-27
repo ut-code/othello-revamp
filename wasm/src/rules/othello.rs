@@ -140,7 +140,28 @@ impl Board {
         new
     }
     /// flips pieces accordingly. returns Ok(count of flipped pieces) or Err(PlaceError).
-    pub fn place(&mut self, piece: Piece, at: Point) -> Result<usize, PlaceError> {
+    /// ```rust
+    /// use boardgame_ai::rules::othello::*;
+    /// let input = "
+    ///     .wwb
+    ///     ....
+    ///     ....
+    ///     ....
+    /// ";
+    /// let expected = "
+    ///     bbbb
+    ///     ....
+    ///     ....
+    ///     ....
+    /// ";
+    /// let mut board = Board::decode(input, 4).unwrap();
+    /// let expected = Board::decode(expected, 4).unwrap();
+    ///
+    /// let flip_count = board.place(Point::new(0, 0), Piece::Black).unwrap();
+    /// assert_eq!(board, expected);
+    /// assert_eq!(flip_count, 2);
+    /// ```
+    pub fn place(&mut self, at: Point, piece: Piece) -> Result<usize, PlaceError> {
         let Ok(prev) = self.get(at) else {
             return Err(PlaceError::OutOfBoundary);
         };
@@ -314,32 +335,6 @@ mod test_board {
         assert!(decoded.is_ok(), "{:?}", decoded);
     }
     #[test]
-    fn place_basic() {
-        let input = "
-            .wwwbw
-            ......
-            ......
-            ......
-            ......
-            ......
-        ";
-        let expected = "
-            bbbbbw
-            ......
-            ......
-            ......
-            ......
-            ......
-        ";
-        let mut board = Board::decode(input, 6).unwrap();
-        let expected = Board::decode(expected, 6).unwrap();
-
-        let flipped = board.place(Piece::Black, Point::new(0, 0)).unwrap();
-        assert_eq!(board, expected);
-        assert_eq!(flipped, 3);
-    }
-
-    #[test]
     fn place_complex() {
         let input = "
             bbw.bb
@@ -360,10 +355,39 @@ mod test_board {
         let mut board = Board::decode(input, 6).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
 
-        let flipped = board.place(Piece::Black, Point::new(2, 2)).unwrap();
+        let flipped = board.place(Point::new(2, 2), Piece::Black).unwrap();
 
         assert_eq!(board, expected);
         assert_eq!(flipped, 5);
+    }
+    #[test]
+    fn place_should_not_overwrite_past_stop() {
+        let input = "
+            .wwwb.
+            .wwwbw
+            .wwwbb
+            .wwwwb
+            ......
+            ......
+        ";
+        let expected = "
+            bbbbb.
+            bbbbbw
+            bbbbbb
+            bbbbbb
+            ......
+            ......
+        ";
+        let mut board = Board::decode(input, 6).unwrap();
+        let expected = Board::decode(expected, 6).unwrap();
+
+        let mut flipped = board.place(Point::new(0, 0), Piece::Black).unwrap();
+        flipped += board.place(Point::new(0, 1), Piece::Black).unwrap();
+        flipped += board.place(Point::new(0, 2), Piece::Black).unwrap();
+        flipped += board.place(Point::new(0, 3), Piece::Black).unwrap();
+
+        assert_eq!(board, expected);
+        assert_eq!(flipped, 13);
     }
     #[test]
     fn place_eight_directions() {
@@ -386,7 +410,7 @@ mod test_board {
         let mut board = Board::decode(input, 6).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
 
-        let flipped = board.place(Piece::Black, Point::new(2, 2)).unwrap();
+        let flipped = board.place(Point::new(2, 2), Piece::Black).unwrap();
 
         assert_eq!(board, expected);
         assert_eq!(flipped, 11);
