@@ -22,7 +22,11 @@
           toolchain
           wasm-pack
           biome
+          lefthook
         ];
+        shellHook = ''
+          lefthook install
+        '';
       };
     });
 }

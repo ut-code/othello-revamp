@@ -1,0 +1,19 @@
+pre-commit:
+  parallel: true
+  commands:
+    prettier:
+      tags: web format
+      glob: "*"
+      run: pnpm prettier --write --ignore-unknown -- {staged_files}
+    biome:
+      tags: web lint
+      glob: "*"
+      run: biome check --fix --no-errors-on-unmatched --files-ignore-unknown=true -- {staged_files}
+    rustfmt:
+      tags: rust format
+      glob: "{wasm/*}"
+      run: cd wasm; cargo fmt
+    clippy:
+      tags: rust lint
+      glob: "*.go"
+      run: cd wasm; cargo clippy --fix --allow-dirty -- -Dwarnings

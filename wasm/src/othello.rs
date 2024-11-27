@@ -11,12 +11,12 @@ static EIGHT_DIRECTIONS: [(isize, isize); 8] = [
     (-1, 0),
 ];
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Point {
+pub struct Point {
     x: usize,
     y: usize,
 }
 #[derive(Debug, PartialEq, Eq)]
-struct OutOfBoundaryError();
+pub struct OutOfBoundaryError();
 impl Point {
     pub fn new(x: usize, y: usize) -> Self {
         Point { x, y }
@@ -30,7 +30,7 @@ impl Point {
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct Direction {
+pub struct Direction {
     x: isize,
     y: isize,
 }
@@ -53,7 +53,7 @@ mod test_point {
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Piece {
+pub enum Piece {
     Black,
     White,
 }
@@ -65,16 +65,16 @@ impl Piece {
         }
     }
 }
-impl Into<Cell> for Piece {
-    fn into(self) -> Cell {
-        match self {
+impl From<Piece> for Cell {
+    fn from(val: Piece) -> Self {
+        match val {
             Piece::Black => Cell::Black,
             Piece::White => Cell::White,
         }
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Cell {
+pub enum Cell {
     Empty,
     Black,
     White,
@@ -88,9 +88,9 @@ impl Cell {
         }
     }
 }
-impl Into<Option<Piece>> for Cell {
-    fn into(self) -> Option<Piece> {
-        match self {
+impl From<Cell> for Option<Piece> {
+    fn from(val: Cell) -> Self {
+        match val {
             Cell::Empty => None,
             Cell::Black => Some(Piece::Black),
             Cell::White => Some(Piece::White),
@@ -119,12 +119,11 @@ impl Board {
             .ok_or(OutOfBoundaryError())?
             .get(at.x)
             .ok_or(OutOfBoundaryError())
-            .map(|val| *val)
+            .copied()
     }
     pub fn new(rows: usize) -> Self {
         assert!(rows % 2 == 0, "rows must be divisible by 2");
         assert!(rows < 255, "rows should not be larger than 255");
-        let rows = rows as usize;
         let mut new = Self {
             rows: vec![vec![Cell::Empty; rows]; rows],
         };
@@ -154,7 +153,7 @@ impl Board {
         if count == 0 {
             return Err(PlaceError::NoPiecesChanged);
         }
-        return Ok(());
+        Ok(())
     }
 
     /// ```rust
@@ -173,7 +172,7 @@ impl Board {
         let rows: Vec<_> = serialized
             .lines()
             .map(|line| line.trim())
-            .filter(|line| line.len() > 0)
+            .filter(|line| !line.is_empty())
             .collect();
         if rows.len() != board_size {
             return Err(DecodeError::UnmatchedOverallLength {
@@ -213,7 +212,7 @@ impl Board {
                 .rows
                 .iter()
                 .map(|row| {
-                    row.into_iter()
+                    row.iter()
                         .map(|cell| match cell {
                             Cell::Empty => ".",
                             Cell::Black => "b",
@@ -341,5 +340,5 @@ pub fn flip_in_direction(b: &mut Board, at: Point, piece: Piece, direction: Dire
         let cell = b.get(pos).unwrap();
         b.set(pos, cell.flip()).unwrap();
     }
-    return lim;
+    lim
 }
