@@ -65,8 +65,8 @@ pub fn place_at(board: &Board, player: Piece, at: &Point) -> Result<Board, Strin
 }
 
 #[wasm_bindgen]
-pub fn generate_ai_play(board: &Board, ai_player: Piece, rec: usize) -> Board {
-    let next_play = predict(board, rec, ai_player);
+pub fn generate_ai_play(board: &Board, ai_player: Piece, strength: usize) -> Board {
+    let next_play = predict(board, ai_player, strength, strength);
     match next_play {
         Some(play) => board.clone().place(play, ai_player).unwrap().0,
         None => board.clone(),

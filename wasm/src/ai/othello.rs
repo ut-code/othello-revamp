@@ -1,7 +1,5 @@
 use crate::rules::othello as rules;
-use rules::Board;
-use rules::Piece;
-use rules::Point;
+use rules::*;
 
 pub fn eval(state: &Board, next_player: Piece) -> f64 {
     state.score(next_player) as f64
@@ -19,15 +17,23 @@ pub fn eval(state: &Board, next_player: Piece) -> f64 {
 /// .bbb
 /// ";
 /// let board = Board::decode(board, 4).unwrap();
-/// let next_play = ai::predict(&board, 0, Piece::Black).unwrap();
+/// let next_play = ai::predict(&board, Piece::Black, 0, 10).unwrap();
 /// assert_eq!(next_play, Point::new(1, 1));
 /// ```
-pub fn predict(state: &Board, rec: usize, ai_player: Piece) -> Option<Point> {
-    predict_rec(state, rec, ai_player).first().map(|val| val.0)
+pub fn predict(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) -> Option<Point> {
+    predict_rec(state, ai_player, rec, width_lim)
+        .first()
+        .map(|val| val.0)
 }
 
 /// returns vec sorted by score.
-fn predict_rec(state: &Board, rec: usize, ai_player: Piece) -> Vec<(Point, usize)> {
+fn predict_rec(
+    state: &Board,
+    ai_player: Piece,
+    rec: usize,
+    width_lim: usize,
+) -> Vec<(Point, usize)> {
+    // MAX: state.size ^ 2
     let possible = state.placeable(ai_player);
     let current = state.score(ai_player);
     let mut possible: Vec<_> = possible
@@ -36,17 +42,17 @@ fn predict_rec(state: &Board, rec: usize, ai_player: Piece) -> Vec<(Point, usize
         .collect();
     possible.sort_by_key(|(_, score)| *score);
     possible.reverse();
+    possible.truncate(width_lim);
     if rec == 0 {
         return possible;
     }
-    // HACK: only calculating scores of TOP N to reduce calculation and mem use | N = rec + 1
-    possible.truncate(rec + 1);
     let mut play_score_map = possible
         .into_iter()
         .map(|(ai_play, ai_score)| {
             let (next_board, placed) = state.clone().place(ai_play, ai_player).unwrap();
             assert_ne!(placed, 0);
-            let human_plays = predict_rec(&next_board, rec - 1, ai_player.flip());
+            // this explodes unless you set width_lim to 1.
+            let human_plays = predict_rec(&next_board, ai_player.flip(), rec - 1, 1);
             let human_score = human_plays
                 .first()
                 .map(|play| next_board.count_flips(play.0, ai_player.flip()))
@@ -72,7 +78,7 @@ mod test {
             ....
         ";
         let board = Board::decode(board, 4).unwrap();
-        let next_play = predict(&board, 0, Piece::Black).unwrap();
+        let next_play = predict(&board, Piece::Black, 0, 10).unwrap();
         assert_eq!(next_play, Point::new(0, 2));
     }
     #[test]
@@ -84,19 +90,23 @@ mod test {
             bwbw
         ";
         let board = Board::decode(board, 4).unwrap();
-        let next_play = predict(&board, 0, Piece::Black);
+        let next_play = predict(&board, Piece::Black, 0, 10);
         assert_eq!(next_play, None);
     }
     #[test]
     fn recursion_should_terminate() {
         let board = "
-            ...w
-            ..wb
-            .bbb
-            ..bb
+            ........
+            ........
+            ........
+            wbwwbbwb
+            ...w.wbb
+            ..wbbbw.
+            .bbb....
+            ..bb....
         ";
-        let board = Board::decode(board, 4).unwrap();
-        let next_play = predict(&board, 10, Piece::Black);
+        let board = Board::decode(board, 8).unwrap();
+        let next_play = predict(&board, Piece::Black, 10, 10);
         let next_board = board.place(next_play.unwrap(), Piece::Black).unwrap();
         drop(next_board);
     }
