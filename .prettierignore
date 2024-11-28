@@ -4,6 +4,4 @@ flake.lock
 
 # out
 web/.svelte-kit
-web/src/wasm
-wasm/target
 wasm/pkg

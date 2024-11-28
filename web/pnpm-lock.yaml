@@ -21,8 +21,8 @@ importers:
         specifier: ^0.5.15
         version: 0.5.15(tailwindcss@3.4.15)
       wasm:
-        specifier: file:./src/wasm
-        version: othello-wasm@file:src/wasm
+        specifier: file:../wasm/pkg
+        version: boardgame-ai@file:../wasm/pkg
     devDependencies:
       '@sveltejs/adapter-auto':
         specifier: ^3.0.0
@@ -543,6 +543,9 @@ packages:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
+  boardgame-ai@file:../wasm/pkg:
+    resolution: {directory: ../wasm/pkg, type: directory}
+
   brace-expansion@2.0.1:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
 
@@ -848,9 +851,6 @@ packages:
   object-hash@3.0.0:
     resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
     engines: {node: '>= 6'}
-
-  othello-wasm@file:src/wasm:
-    resolution: {directory: src/wasm, type: directory}
 
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
@@ -1493,6 +1493,8 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
+  boardgame-ai@file:../wasm/pkg: {}
+
   brace-expansion@2.0.1:
     dependencies:
       balanced-match: 1.0.2
@@ -1776,8 +1778,6 @@ snapshots:
   object-assign@4.1.1: {}
 
   object-hash@3.0.0: {}
-
-  othello-wasm@file:src/wasm: {}
 
   package-json-from-dist@1.0.1: {}
 

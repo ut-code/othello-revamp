@@ -6,12 +6,8 @@ build-wasm:
 build-web:
     cd web; pnpm run build
 build: build-wasm
-    just copy-wasm
-    just build-web
     pnpm i # it won't update types without this
-copy-wasm:
-    if [ -d web/src/wasm ]; then rm -r web/src/wasm; fi
-    cp wasm/pkg web/src/wasm -r
+    just build-web
 
 test: test-wasm
 test-wasm:
@@ -20,4 +16,4 @@ dev:
     @# Node.js の SSR で必要。
     cd web; pnpm dev
 preview:
-    NODE_OPTIONS=--experimental-wasm-modules cd web; pnpm preview
+    cd web; pnpm preview
