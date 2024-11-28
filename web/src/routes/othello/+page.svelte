@@ -1,5 +1,4 @@
 <script lang="ts">
-  export const ssr = false;
   import { greet, init_othello } from "wasm";
   function onclick() {
     const board = init_othello(6);
