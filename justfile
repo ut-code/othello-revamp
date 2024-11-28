@@ -2,8 +2,8 @@ set export := true
 NODE_OPTIONS := "--experimental-wasm-modules"
 setup:
     pnpm i --frozen-lockfile
+    just build-wasm; # required because web/package.json depends on this
     cd web; pnpm i --frozen-lockfile
-    cd wasm; cargo fetch # not necessary, but setup is already taking some time so let's just download this now than later
 
 build-wasm:
     if [ -d wasm/pkg ]; then rm -r wasm/pkg; fi
