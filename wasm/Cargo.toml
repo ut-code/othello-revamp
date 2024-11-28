@@ -3,6 +3,9 @@ name = "boardgame-ai"
 version = "0.1.0"
 authors = ["aster <137767097+aster-void@users.noreply.github.com>"]
 edition = "2018"
+license = "MIT"
+repository = "https://github.com:ut-code/othello-revamp"
+description = "Othello AI, revamped on Rust/WASM"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

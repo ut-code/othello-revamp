@@ -19,6 +19,11 @@ pub fn greet() {
 }
 
 #[wasm_bindgen]
+pub fn version() -> String {
+    "1.0.0".to_owned()
+}
+
+#[wasm_bindgen]
 pub fn init_othello(size: usize) -> Board {
     set_panic_hook();
     othello_rules::Board::new(size)

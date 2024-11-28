@@ -4,6 +4,16 @@ setup:
     pnpm i --frozen-lockfile
     just build-wasm; # required because web/package.json depends on this
     cd web; pnpm i --frozen-lockfile
+clean: clean-root clean-web clean-wasm
+clean-root:
+    if [ -d node_modules ]; then rm -r node_modules; fi
+clean-web:
+    cd web; if [ -d node_modules ]; then rm -r node_modules; fi
+    cd web; if [ -d .svelte-kit ]; then rm -r .svelte-kit; fi
+clean-wasm:
+    cd wasm; cargo clean
+    cd wasm; if [ -d pkg ]; then rm -r pkg; fi
+    cd wasm; if [ -d target ]; then rm -r target; fi
 
 build-wasm:
     if [ -d wasm/pkg ]; then rm -r wasm/pkg; fi

@@ -162,7 +162,10 @@ mod test {
             ..bb........
         ";
         let board = Board::decode(board, 12).unwrap();
-        let next_play = predict(&board, Piece::Black, 5, 10);
+        let next_play = predict(&board, Piece::Black, 7, 10);
+        // NOTE: it takes around 10x~ more time on test than on WAsm, because test runs on debug mode.
+        // add --release flag to `cargo test` and it will magically be 10x faster.
+        // (i.e. it's not a bug that wasm runs much faster than on native test, given same params)
         let next_board = board.place(next_play.unwrap(), Piece::Black).unwrap();
         drop(next_board);
     }
