@@ -16,7 +16,7 @@ copy-wasm:
 test: test-wasm
 test-wasm:
     cd wasm; cargo test
-watch:
+dev:
     @# Node.js の SSR で必要。
     cd web; pnpm dev
 preview:

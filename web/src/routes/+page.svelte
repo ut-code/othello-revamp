@@ -1,7 +1,8 @@
 <script lang="ts">
-  import * as wasm from "wasm";
+  export const ssr = false;
+  import { greet, init_othello } from "wasm";
   function onclick() {
-    const board = wasm.init_othello(6);
+    const board = init_othello(6);
     console.log(
       board
         .get_data()
@@ -12,4 +13,5 @@
 </script>
 
 <h1>Welcome to SvelteKit</h1>
-<button {onclick}>Greet</button>
+<button onclick={() => greet()}>Greet</button>
+<button {onclick}>Create othello board</button>
