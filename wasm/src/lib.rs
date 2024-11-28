@@ -29,6 +29,11 @@ pub fn placeable(board: Board, player: Piece) -> Vec<Point> {
     set_panic_hook();
     board.placeable(player)
 }
+#[wasm_bindgen]
+pub fn can_place(board: Board, at: Point, player: Piece) -> bool {
+    set_panic_hook();
+    board.count_flips(at, player) > 0
+}
 
 #[wasm_bindgen]
 /// return either Ok(encoded board) or Err(error)

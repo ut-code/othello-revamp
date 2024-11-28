@@ -31,6 +31,12 @@ impl Point {
         Ok(res)
     }
 }
+#[wasm_bindgen]
+impl Point {
+    pub fn create(x: usize, y: usize) -> Point {
+        Point::new(x, y)
+    }
+}
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Direction {
     x: isize,
@@ -472,7 +478,7 @@ mod test_board {
     fn count_flip() {
         let table = "
             .bw.bb
-            b.bbbw
+            b.bbbb
             b.wwbw
             wbbbb.
             ww.bbw
@@ -480,11 +486,13 @@ mod test_board {
         ";
         let table = Board::decode(table, 6).unwrap();
         assert_eq!(table.count_flips(Point::new(0, 0), Piece::White), 3);
-        assert_eq!(table.count_flips(Point::new(1, 1), Piece::White), 3);
         assert_eq!(table.count_flips(Point::new(5, 3), Piece::White), 6);
-        assert_eq!(table.count_flips(Point::new(5, 3), Piece::Black), 2);
+        assert_eq!(table.count_flips(Point::new(5, 3), Piece::Black), 1);
         assert_eq!(table.count_flips(Point::new(3, 0), Piece::White), 2);
-        assert_eq!(table.count_flips(Point::new(2, 4), Piece::White), 5);
+        assert_eq!(table.count_flips(Point::new(2, 4), Piece::White), 3);
+        // zero examples
+        assert_eq!(table.count_flips(Point::new(0, 0), Piece::Black), 0);
+        assert_eq!(table.count_flips(Point::new(1, 1), Piece::White), 0);
         // should not overwrite existing pieces
         assert_eq!(table.count_flips(Point::new(3, 3), Piece::White), 0);
         assert_eq!(table.count_flips(Point::new(2, 1), Piece::White), 0);

@@ -1,16 +1,26 @@
 <script lang="ts">
-  import { greet, init_othello } from "wasm";
-  function onclick() {
-    const board = init_othello(6);
-    console.log(
-      board
-        .get_data()
-        .map((row: Array<string>) => row.join(""))
-        .join("\n"),
-    );
+  import { Piece, greet, init_othello, place_at } from "boardgame-ai";
+  import Board from "./Board.svelte";
+  let board_size = $state(6);
+  // svelte-ignore state_referenced_locally
+  let board = $state(init_othello(board_size));
+  let player = $state(Piece.Black);
+  $effect(() => {
+    board = init_othello(board_size);
+  });
+  function reset() {
+    board = init_othello(board_size);
   }
 </script>
 
-<h1>Welcome to SvelteKit</h1>
-<button onclick={() => greet()}>Greet</button>
-<button {onclick}>Create othello board</button>
+<h1 class="text-5xl font-bold">Welcome to Othello AI!</h1>
+<center>
+  <Board
+    {board}
+    onclick={(point) => {
+      board = place_at(board, player, point);
+    }}
+    clickable={true}
+  />
+</center>
+<button class="btn btn-error align-right" onclick={reset}>Reset</button>
