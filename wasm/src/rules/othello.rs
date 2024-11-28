@@ -1,4 +1,5 @@
 use std::fmt;
+use wasm_bindgen::prelude::*;
 
 static EIGHT_DIRECTIONS: [(isize, isize); 8] = [
     (-1, -1),
@@ -11,9 +12,10 @@ static EIGHT_DIRECTIONS: [(isize, isize); 8] = [
     (-1, 0),
 ];
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[wasm_bindgen]
 pub struct Point {
-    x: usize,
-    y: usize,
+    pub x: usize,
+    pub y: usize,
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct OutOfBoundaryError();
@@ -53,6 +55,7 @@ mod test_point {
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[wasm_bindgen]
 pub enum Piece {
     Black,
     White,
@@ -74,6 +77,7 @@ impl From<Piece> for Cell {
     }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[wasm_bindgen]
 pub enum Cell {
     Empty,
     Black,
@@ -99,10 +103,40 @@ impl From<Cell> for Option<Piece> {
 }
 
 #[derive(Clone, PartialEq, Eq)]
+#[wasm_bindgen]
 pub struct Board {
-    size: usize,
+    pub size: usize,
     data: Vec<Vec<Cell>>,
 }
+#[wasm_bindgen]
+impl Board {
+    /// is an (relatively) expensive operation, so better cached than done every access
+    /// should return Array<Array<" " | "b" | "w">>
+    pub fn get_data(&self) -> wasm_bindgen::JsValue {
+        let data: String = self
+            .data
+            .iter()
+            .map(|row| {
+                format!(
+                    "[{}]",
+                    &row.iter()
+                        .map(|p| {
+                            match p {
+                                Cell::Empty => r#"" ""#,
+                                Cell::Black => r#""b""#,
+                                Cell::White => r#""w""#,
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                        .join(",")
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(",");
+        js_sys::JSON::parse(&format!("[{}]", data)).unwrap()
+    }
+}
+
 impl Board {
     /// primitive opration. doesn't do anything other than setting the pice.
     /// returns Err iff at is out of boundary
@@ -154,29 +188,44 @@ impl Board {
     ///     ....
     ///     ....
     /// ";
-    /// let mut board = Board::decode(input, 4).unwrap();
+    /// let board = Board::decode(input, 4).unwrap();
     /// let expected = Board::decode(expected, 4).unwrap();
     ///
-    /// let flip_count = board.place(Point::new(0, 0), Piece::Black).unwrap();
-    /// assert_eq!(board, expected);
+    /// let (next_board, flip_count) = board.place(Point::new(0, 0), Piece::Black).unwrap();
+    /// assert_eq!(next_board, expected);
     /// assert_eq!(flip_count, 2);
     /// ```
-    pub fn place(&mut self, at: Point, piece: Piece) -> Result<usize, PlaceError> {
+    pub fn place(mut self, at: Point, piece: Piece) -> Result<(Board, usize), PlaceError> {
         let Ok(prev) = self.get(at) else {
-            return Err(PlaceError::OutOfBoundary);
+            return Err(PlaceError {
+                board: self,
+                at,
+                player: piece,
+                kind: PlaceErrorKind::OutOfBoundary,
+            });
         };
         if prev != Cell::Empty {
-            return Err(PlaceError::AlreadyOccupied);
+            return Err(PlaceError {
+                board: self,
+                at,
+                player: piece,
+                kind: PlaceErrorKind::AlreadyOccupied,
+            });
         }
         self.set(at, piece).unwrap(); // shouldn't panic, as it would be already be return beforehand
         let mut count = 0;
         for dir in EIGHT_DIRECTIONS.iter().map(|&(x, y)| Direction { x, y }) {
-            count += flip_in_direction(self, at, piece, dir);
+            count += flip_in_direction(&mut self, at, piece, dir);
         }
         if count == 0 {
-            return Err(PlaceError::NoPiecesChanged);
+            return Err(PlaceError {
+                board: self,
+                at,
+                player: piece,
+                kind: PlaceErrorKind::NoPiecesChanged,
+            });
         }
-        Ok(count)
+        Ok((self, count))
     }
     pub fn count_flips(&self, at: Point, piece: Piece) -> usize {
         let Ok(prev) = self.get(at) else {
@@ -351,10 +400,10 @@ mod test_board {
             ww.bbw
             ww.bbb
         ";
-        let mut board = Board::decode(input, 6).unwrap();
+        let board = Board::decode(input, 6).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
 
-        let flipped = board.place(Point::new(2, 2), Piece::Black).unwrap();
+        let (board, flipped) = board.place(Point::new(2, 2), Piece::Black).unwrap();
 
         assert_eq!(board, expected);
         assert_eq!(flipped, 5);
@@ -377,16 +426,21 @@ mod test_board {
             ......
             ......
         ";
-        let mut board = Board::decode(input, 6).unwrap();
+        let board = Board::decode(input, 6).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
 
-        let mut flipped = board.place(Point::new(0, 0), Piece::Black).unwrap();
-        flipped += board.place(Point::new(0, 1), Piece::Black).unwrap();
-        flipped += board.place(Point::new(0, 2), Piece::Black).unwrap();
-        flipped += board.place(Point::new(0, 3), Piece::Black).unwrap();
+        let mut flipped_total = 0;
+        let (board, flipped) = board.place(Point::new(0, 0), Piece::Black).unwrap();
+        flipped_total += flipped;
+        let (board, flipped) = board.place(Point::new(0, 1), Piece::Black).unwrap();
+        flipped_total += flipped;
+        let (board, flipped) = board.place(Point::new(0, 2), Piece::Black).unwrap();
+        flipped_total += flipped;
+        let (board, flipped) = board.place(Point::new(0, 3), Piece::Black).unwrap();
+        flipped_total += flipped;
 
         assert_eq!(board, expected);
-        assert_eq!(flipped, 13);
+        assert_eq!(flipped_total, 13);
     }
     #[test]
     fn place_eight_directions() {
@@ -406,10 +460,10 @@ mod test_board {
             b.b.b.
             ..b..b
         ";
-        let mut board = Board::decode(input, 6).unwrap();
+        let board = Board::decode(input, 6).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
 
-        let flipped = board.place(Point::new(2, 2), Piece::Black).unwrap();
+        let (board, flipped) = board.place(Point::new(2, 2), Piece::Black).unwrap();
 
         assert_eq!(board, expected);
         assert_eq!(flipped, 11);
@@ -437,11 +491,32 @@ mod test_board {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[wasm_bindgen]
+pub struct PlaceError {
+    board: Board,
+    at: Point,
+    player: Piece,
+    kind: PlaceErrorKind,
+}
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum PlaceError {
+enum PlaceErrorKind {
     AlreadyOccupied,
     OutOfBoundary,
     NoPiecesChanged,
+}
+impl From<PlaceError> for String {
+    fn from(error: PlaceError) -> String {
+        let PlaceError {
+            kind,
+            player,
+            at,
+            board,
+        } = error;
+        format!(
+            "Failed to place piece at board. error: {kind:?}, tried to place {player:?} at {at:?} on board {board:?}",
+        )
+    }
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DecodeError {

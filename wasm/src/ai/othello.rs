@@ -44,8 +44,8 @@ fn predict_rec(state: &Board, rec: usize, ai_player: Piece) -> Vec<(Point, usize
     let mut play_score_map = possible
         .into_iter()
         .map(|(ai_play, ai_score)| {
-            let mut next_board = state.clone();
-            assert_ne!(next_board.place(ai_play, ai_player).unwrap(), 0);
+            let (next_board, placed) = state.clone().place(ai_play, ai_player).unwrap();
+            assert_ne!(placed, 0);
             let human_plays = predict_rec(&next_board, rec - 1, ai_player.flip());
             let human_score = human_plays
                 .first()
@@ -97,7 +97,7 @@ mod test {
         ";
         let board = Board::decode(board, 4).unwrap();
         let next_play = predict(&board, 10, Piece::Black);
-        let mut next_board = board;
-        next_board.place(next_play.unwrap(), Piece::Black).unwrap();
+        let next_board = board.place(next_play.unwrap(), Piece::Black).unwrap();
+        drop(next_board);
     }
 }
