@@ -19,10 +19,9 @@ pub fn greet() {
 }
 
 #[wasm_bindgen]
-pub fn init_othello(size: usize) -> String {
+pub fn init_othello(size: usize) -> Board {
     set_panic_hook();
-    let new = othello_rules::Board::new(size);
-    new.encode()
+    othello_rules::Board::new(size)
 }
 
 #[wasm_bindgen]

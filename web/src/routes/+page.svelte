@@ -1,8 +1,13 @@
 <script lang="ts">
-  // @ts-ignore
-  import { greet } from "wasm";
+  import * as wasm from "wasm";
   function onclick() {
-    greet();
+    const board = wasm.init_othello(6);
+    console.log(
+      board
+        .get_data()
+        .map((row: Array<string>) => row.join(""))
+        .join(""),
+    );
   }
 </script>
 
