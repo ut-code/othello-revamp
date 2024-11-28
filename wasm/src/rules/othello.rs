@@ -17,7 +17,7 @@ pub struct Point {
     pub x: usize,
     pub y: usize,
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct OutOfBoundaryError();
 impl Point {
     pub fn new(x: usize, y: usize) -> Self {
@@ -144,6 +144,22 @@ impl Board {
 }
 
 impl Board {
+    pub fn size(&self) -> usize {
+        self.size
+    }
+    pub fn cells(self) -> Vec<(Point, Cell)> {
+        self.data
+            .into_iter()
+            .enumerate()
+            .map(|(y, row)| {
+                row.into_iter()
+                    .enumerate()
+                    .map(|(x, cell)| (Point::new(x, y), cell))
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>()
+            .concat()
+    }
     /// primitive opration. doesn't do anything other than setting the pice.
     /// returns Err iff at is out of boundary
     pub fn set(&mut self, at: Point, cell: impl Into<Cell>) -> Result<(), OutOfBoundaryError> {

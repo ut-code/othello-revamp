@@ -5,7 +5,6 @@
 <center>
   <a href="/othello" class="btn btn-primary max-w-sm">オセロ</a>
 </center>
-<button class="btn btn-secondary" onclick={() => greet()}>Greet</button>
 
 <style>
   :global(html) {

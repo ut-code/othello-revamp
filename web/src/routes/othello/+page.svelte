@@ -10,7 +10,8 @@
   import Board from "./Board.svelte";
 
   // states
-  let board_size = 6;
+  let board_size = 8;
+  let strength = 15;
   let board = $state(init_othello(board_size));
   let player = $state<Piece>(Piece.Black);
   let turn = $state<"player" | "ai">("player");
@@ -55,7 +56,7 @@
     board = init_othello(board_size);
   }
   function play_ai() {
-    board = generate_ai_play(board, ai_piece, 5);
+    board = generate_ai_play(board, ai_piece, strength);
     turn = "player";
   }
   function finalize() {

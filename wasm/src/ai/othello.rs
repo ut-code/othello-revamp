@@ -1,8 +1,52 @@
 use crate::rules::othello as rules;
 use rules::*;
 
-pub fn eval(state: &Board, next_player: Piece) -> f64 {
-    state.score(next_player) as f64
+pub fn eval(state: Board, playing: Piece) -> isize {
+    let base_score = state.score(playing) as isize;
+    let size = state.size();
+    let positional_score = state
+        .cells()
+        .into_iter()
+        .map(|(point, cell)| {
+            // mirrored and squashed to top left quarter for easier calc.
+            let squashed = Point {
+                x: if point.x > size / 2 {
+                    size - point.x - 1
+                } else {
+                    point.x
+                },
+                y: if point.y > size / 2 {
+                    size - point.y - 1
+                } else {
+                    point.y
+                },
+            };
+            // asked chat gpt for the scores. I'm not familiar with othello nor AI.
+            let score = if squashed.x == 0 && squashed.y == 0 {
+                // corner
+                10
+            } else if squashed.x <= 1 && squashed.y <= 1 {
+                // dangerous place around corner
+                -4
+            } else if squashed.x == 0 || squashed.y == 0 {
+                // side of the board, more stable than middle
+                2
+            } else if squashed.x == 1 || squashed.y == 1 {
+                // it's bad according to chat gpt?
+                -1
+            } else {
+                0
+            };
+            (score, cell)
+        })
+        .map(|(mul, cell)| match cell {
+            Cell::Empty => 0,
+            _ if cell == playing.into() => mul,
+            _ => -mul,
+        })
+        .sum::<isize>();
+
+    positional_score + base_score
 }
 /// returns (best point to place, expected score).
 /// the larger `rec` is, the better the AI plays. (and more resouce this program consumes)
@@ -17,7 +61,7 @@ pub fn eval(state: &Board, next_player: Piece) -> f64 {
 /// .bbb
 /// ";
 /// let board = Board::decode(board, 4).unwrap();
-/// let next_play = ai::predict(&board, Piece::Black, 0, 10).unwrap();
+/// let next_play = ai::predict(&board, Piece::Black, 1, 10).unwrap();
 /// assert_eq!(next_play, Point::new(1, 1));
 /// ```
 pub fn predict(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) -> Option<Point> {
@@ -32,13 +76,18 @@ fn predict_rec(
     ai_player: Piece,
     rec: usize,
     width_lim: usize,
-) -> Vec<(Point, usize)> {
-    // MAX: state.size ^ 2
+) -> Vec<(Point, isize)> {
+    assert!(
+        rec <= 10,
+        "rec should not be larger than 10, otherwise the order will explode"
+    );
     let possible = state.placeable(ai_player);
-    let current = state.score(ai_player);
     let mut possible: Vec<_> = possible
         .into_iter()
-        .map(|point| (point, current + state.count_flips(point, ai_player)))
+        .map(|play| {
+            let next = state.clone().place(play, ai_player).unwrap().0;
+            (play, eval(next, ai_player))
+        })
         .collect();
     possible.sort_by_key(|(_, score)| *score);
     possible.reverse();
@@ -48,17 +97,20 @@ fn predict_rec(
     }
     let mut play_score_map = possible
         .into_iter()
-        .map(|(ai_play, ai_score)| {
-            let (next_board, placed) = state.clone().place(ai_play, ai_player).unwrap();
+        .map(|(init_ai_play, _)| {
+            // FIXME: this probably contains some logic duplication, but I'm not smart enough to fix it
+            let (after_ai_board, placed) = state.clone().place(init_ai_play, ai_player).unwrap();
             assert_ne!(placed, 0);
-            // this explodes unless you set width_lim to 1.
-            let human_plays = predict_rec(&next_board, ai_player.flip(), rec - 1, 1);
-            let human_score = human_plays
+            let human_plays = predict_rec(&after_ai_board, ai_player.flip(), 0, 1);
+            let mut after_human = after_ai_board.clone();
+            if let Some((play, _)) = human_plays.first() {
+                after_human = after_human.place(*play, ai_player.flip()).unwrap().0;
+            }
+            let next_ai_board = predict_rec(&after_human, ai_player, rec - 1, 2)
                 .first()
-                .map(|play| next_board.count_flips(play.0, ai_player.flip()))
-                .unwrap_or(0);
-            let flip_diff = ai_score - human_score; // larger is better for AI.
-            (ai_play, flip_diff)
+                .map(|play| after_human.clone().place(play.0, ai_player).unwrap().0)
+                .unwrap_or(after_human);
+            (init_ai_play, eval(next_ai_board, ai_player))
         })
         .collect::<Vec<_>>();
     play_score_map.sort_by_key(|play_score| play_score.1);
@@ -74,12 +126,12 @@ mod test {
         let board = "
             bbbb
             wwww
-            .wwb
+            ww.b
             ....
         ";
         let board = Board::decode(board, 4).unwrap();
         let next_play = predict(&board, Piece::Black, 0, 10).unwrap();
-        assert_eq!(next_play, Point::new(0, 2));
+        assert_eq!(next_play, Point::new(0, 3));
     }
     #[test]
     fn when_ai_cannot_place() {
@@ -96,17 +148,21 @@ mod test {
     #[test]
     fn recursion_should_terminate() {
         let board = "
-            ........
-            ........
-            ........
-            wbwwbbwb
-            ...w.wbb
-            ..wbbbw.
-            .bbb....
-            ..bb....
+            ............
+            ............
+            wbwwbbwb....
+            ....wbwwbbwb
+            ............
+            ......bbbww.
+            ............
+            wbwwbbwb....
+            ...w.wbb....
+            ..wbbbw.....
+            .bbb........
+            ..bb........
         ";
-        let board = Board::decode(board, 8).unwrap();
-        let next_play = predict(&board, Piece::Black, 10, 10);
+        let board = Board::decode(board, 12).unwrap();
+        let next_play = predict(&board, Piece::Black, 5, 10);
         let next_board = board.place(next_play.unwrap(), Piece::Black).unwrap();
         drop(next_board);
     }
