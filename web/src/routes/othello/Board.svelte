@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type Board, type Piece, type Point, can_place } from "boardgame-ai";
+  import { type Board, type Piece, Point, can_place } from "boardgame-ai";
   type Props = {
     board: Board;
     onclick: (pos: Point) => void;
@@ -8,6 +8,8 @@
   };
   const { board, onclick, clickable, player }: Props = $props();
   const data: ("." | "w" | "b")[][] = $derived(board.get_data());
+
+  Point.create(0, 0); // prevent biome from turning this into a type import
 </script>
 
 {#each data as row, y (y)}
@@ -18,12 +20,14 @@
       <span class="font-mono">B</span>
     {:else}
       {@const point = Point.create(x, y)}
+      {@const can_click = clickable && can_place(board, point, player)}
       <button
         class="font-mono"
-        disabled={!clickable && can_place(board, point, player)}
+        disabled={!can_click}
         onclick={() => {
+          if (!can_click) return;
           onclick(point);
-        }}>.</button
+        }}>{can_click ? "_" : "."}</button
       >
     {/if}
   {/each}

@@ -25,14 +25,26 @@ pub fn init_othello(size: usize) -> Board {
 }
 
 #[wasm_bindgen]
-pub fn placeable(board: Board, player: Piece) -> Vec<Point> {
+pub fn placeable(board: &Board, player: Piece) -> usize {
     set_panic_hook();
-    board.placeable(player)
+    board.placeable(player).len()
 }
 #[wasm_bindgen]
-pub fn can_place(board: Board, at: Point, player: Piece) -> bool {
+pub fn can_place(board: &Board, at: &Point, player: Piece) -> bool {
     set_panic_hook();
-    board.count_flips(at, player) > 0
+    board.count_flips(*at, player) > 0
+}
+#[wasm_bindgen]
+pub struct Scores {
+    pub black: usize,
+    pub white: usize,
+}
+#[wasm_bindgen]
+pub fn count_score(board: &Board) -> Scores {
+    Scores {
+        black: board.score(Piece::Black),
+        white: board.score(Piece::White),
+    }
 }
 
 #[wasm_bindgen]
@@ -47,16 +59,16 @@ pub fn can_place(board: Board, at: Point, player: Piece) -> bool {
 ///
 /// - the point is already occupied
 /// - the point is not placeable place
-pub fn place_at(board: Board, player: Piece, at: Point) -> Result<Board, String> {
-    let (board, _placed) = board.place(at, player)?;
+pub fn place_at(board: &Board, player: Piece, at: &Point) -> Result<Board, String> {
+    let (board, _placed) = board.clone().place(*at, player)?;
     Ok(board)
 }
 
 #[wasm_bindgen]
-pub fn generate_ai_play(board: Board, ai_player: Piece) -> Board {
-    let next_play = predict(&board, 10, ai_player);
+pub fn generate_ai_play(board: &Board, ai_player: Piece, rec: usize) -> Board {
+    let next_play = predict(board, rec, ai_player);
     match next_play {
-        Some(play) => board.place(play, ai_player).unwrap().0,
-        None => board,
+        Some(play) => board.clone().place(play, ai_player).unwrap().0,
+        None => board.clone(),
     }
 }
