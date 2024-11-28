@@ -11,7 +11,8 @@ build-wasm:
 build-web:
     cd web; pnpm run build
 build: build-wasm
-    pnpm i # it won't update types without this
+    cd web; rm -r node_modules # .vite cache issue (ig)
+    cd web; pnpm i # it won't update types without this
     just build-web
 
 test: test-wasm

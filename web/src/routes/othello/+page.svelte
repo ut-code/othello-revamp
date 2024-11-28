@@ -6,7 +6,7 @@
       board
         .get_data()
         .map((row: Array<string>) => row.join(""))
-        .join(""),
+        .join("\n"),
     );
   }
 </script>

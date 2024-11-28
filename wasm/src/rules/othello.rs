@@ -111,7 +111,7 @@ pub struct Board {
 #[wasm_bindgen]
 impl Board {
     /// is an (relatively) expensive operation, so better cached than done every access
-    /// should return Array<Array<" " | "b" | "w">>
+    /// should return Array<Array<"." | "b" | "w">>
     pub fn get_data(&self) -> wasm_bindgen::JsValue {
         let data: String = self
             .data
@@ -122,7 +122,7 @@ impl Board {
                     &row.iter()
                         .map(|p| {
                             match p {
-                                Cell::Empty => r#"" ""#,
+                                Cell::Empty => r#"".""#,
                                 Cell::Black => r#""b""#,
                                 Cell::White => r#""w""#,
                             }
