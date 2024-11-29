@@ -65,7 +65,7 @@ pub fn count_score(board: &Board) -> Scores {
 /// - the point is already occupied
 /// - the point is not placeable place
 pub fn place_at(board: &Board, player: Piece, at: &Point) -> Result<Board, String> {
-    let (board, _placed) = board.clone().place(*at, player)?;
+    let board = board.clone().place(*at, player)?;
     Ok(board)
 }
 
@@ -73,7 +73,7 @@ pub fn place_at(board: &Board, player: Piece, at: &Point) -> Result<Board, Strin
 pub fn generate_ai_play(board: &Board, ai_player: Piece, strength: usize) -> Board {
     let next_play = predict(board, ai_player, strength, strength);
     match next_play {
-        Some(play) => board.clone().place(play, ai_player).unwrap().0,
+        Some(play) => board.clone().place(play, ai_player).unwrap(),
         None => board.clone(),
     }
 }

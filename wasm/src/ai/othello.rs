@@ -96,7 +96,7 @@ fn predict_rec(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) ->
     let possible = state.placeable(ai_player);
     let mut possible: Vec<_> = possible.into_iter().collect();
     possible.sort_by_cached_key(|&play| {
-        let next = state.clone().place(play, ai_player).unwrap().0;
+        let next = state.clone().place(play, ai_player).unwrap();
         eval(next, ai_player)
     });
     possible.reverse();
@@ -108,16 +108,15 @@ fn predict_rec(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) ->
         .into_iter()
         .map(|init_ai_play| {
             // FIXME: this probably contains some logic duplication, but I'm not smart enough to fix it
-            let (after_ai_board, placed) = state.clone().place(init_ai_play, ai_player).unwrap();
-            assert_ne!(placed, 0);
+            let after_ai_board = state.clone().place(init_ai_play, ai_player).unwrap();
             let human_plays = predict_rec(&after_ai_board, ai_player.flip(), 0, 1);
             let mut after_human = after_ai_board.clone();
             if let Some(play) = human_plays.first() {
-                after_human = after_human.place(*play, ai_player.flip()).unwrap().0;
+                after_human = after_human.place(*play, ai_player.flip()).unwrap();
             }
             let next_ai_board = predict_rec(&after_human, ai_player, rec - 1, 2)
                 .first()
-                .map(|play| after_human.clone().place(*play, ai_player).unwrap().0)
+                .map(|play| after_human.clone().place(*play, ai_player).unwrap())
                 .unwrap_or(after_human);
             (init_ai_play, eval(next_ai_board, ai_player))
         })

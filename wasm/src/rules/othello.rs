@@ -213,11 +213,10 @@ impl Board {
     /// let board = Board::decode(input, 4).unwrap();
     /// let expected = Board::decode(expected, 4).unwrap();
     ///
-    /// let (next_board, flip_count) = board.place(Point::new(0, 0), Piece::Black).unwrap();
+    /// let next_board = board.place(Point::new(0, 0), Piece::Black).unwrap();
     /// assert_eq!(next_board, expected);
-    /// assert_eq!(flip_count, 2);
     /// ```
-    pub fn place(mut self, at: Point, piece: Piece) -> Result<(Board, usize), PlaceError> {
+    pub fn place(mut self, at: Point, piece: Piece) -> Result<Board, PlaceError> {
         let Ok(prev) = self.get(at) else {
             return Err(PlaceError {
                 board: self,
@@ -247,7 +246,7 @@ impl Board {
                 kind: PlaceErrorKind::NoPiecesChanged,
             });
         }
-        Ok((self, count))
+        Ok(self)
     }
     pub fn count_flips(&self, at: Point, piece: Piece) -> usize {
         let Ok(prev) = self.get(at) else {
@@ -425,10 +424,8 @@ mod test_board {
         let board = Board::decode(input, 6).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
 
-        let (board, flipped) = board.place(Point::new(2, 2), Piece::Black).unwrap();
-
+        let board = board.place(Point::new(2, 2), Piece::Black).unwrap();
         assert_eq!(board, expected);
-        assert_eq!(flipped, 5);
     }
     #[test]
     fn place_should_not_overwrite_past_stop() {
@@ -451,18 +448,12 @@ mod test_board {
         let board = Board::decode(input, 6).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
 
-        let mut flipped_total = 0;
-        let (board, flipped) = board.place(Point::new(0, 0), Piece::Black).unwrap();
-        flipped_total += flipped;
-        let (board, flipped) = board.place(Point::new(0, 1), Piece::Black).unwrap();
-        flipped_total += flipped;
-        let (board, flipped) = board.place(Point::new(0, 2), Piece::Black).unwrap();
-        flipped_total += flipped;
-        let (board, flipped) = board.place(Point::new(0, 3), Piece::Black).unwrap();
-        flipped_total += flipped;
+        let board = board.place(Point::new(0, 0), Piece::Black).unwrap();
+        let board = board.place(Point::new(0, 1), Piece::Black).unwrap();
+        let board = board.place(Point::new(0, 2), Piece::Black).unwrap();
+        let board = board.place(Point::new(0, 3), Piece::Black).unwrap();
 
         assert_eq!(board, expected);
-        assert_eq!(flipped_total, 13);
     }
     #[test]
     fn place_eight_directions() {
@@ -485,10 +476,9 @@ mod test_board {
         let board = Board::decode(input, 6).unwrap();
         let expected = Board::decode(expected, 6).unwrap();
 
-        let (board, flipped) = board.place(Point::new(2, 2), Piece::Black).unwrap();
+        let board = board.place(Point::new(2, 2), Piece::Black).unwrap();
 
         assert_eq!(board, expected);
-        assert_eq!(flipped, 11);
     }
     #[test]
     fn count_flip() {
