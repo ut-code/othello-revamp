@@ -24,16 +24,16 @@ pub fn eval(state: Board, playing: Piece) -> isize {
             // asked chat gpt for the scores. I'm not familiar with othello nor AI.
             let score = if squashed.x == 0 && squashed.y == 0 {
                 // corner
-                10
+                50
             } else if squashed.x <= 1 && squashed.y <= 1 {
                 // dangerous place around corner
-                -4
+                -20
             } else if squashed.x == 0 || squashed.y == 0 {
                 // side of the board, more stable than middle
-                2
+                10
             } else if squashed.x == 1 || squashed.y == 1 {
                 // it's bad according to chat gpt?
-                -1
+                -5
             } else {
                 0
             };
@@ -47,6 +47,23 @@ pub fn eval(state: Board, playing: Piece) -> isize {
         .sum::<isize>();
 
     positional_score + base_score
+}
+#[cfg(test)]
+mod test_eval {
+    use super::*;
+    #[test]
+    fn eval_corner() {
+        let board = "
+            ....
+            ....
+            ....
+            ...b
+        ";
+        let board = Board::decode(board, 4).unwrap();
+        let expected_score = 50 + 1;
+        let score = eval(board, Piece::Black);
+        assert_eq!(expected_score, score);
+    }
 }
 /// returns (best point to place, expected score).
 /// the larger `rec` is, the better the AI plays. (and more resouce this program consumes)
