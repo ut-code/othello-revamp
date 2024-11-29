@@ -65,7 +65,7 @@ mod test_eval {
         assert_eq!(expected_score, score);
     }
 }
-/// returns (best point to place, expected score).
+/// returns best point to place.
 /// the larger `rec` is, the better the AI plays. (and more resouce this program consumes)
 /// will return None if there were no cells that AI can place.
 /// ```rust
@@ -84,29 +84,21 @@ mod test_eval {
 pub fn predict(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) -> Option<Point> {
     predict_rec(state, ai_player, rec, width_lim)
         .first()
-        .map(|val| val.0)
+        .copied()
 }
 
 /// returns vec sorted by score.
-fn predict_rec(
-    state: &Board,
-    ai_player: Piece,
-    rec: usize,
-    width_lim: usize,
-) -> Vec<(Point, isize)> {
+fn predict_rec(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) -> Vec<Point> {
     assert!(
         rec <= 10,
         "rec should not be larger than 10, otherwise the order will explode"
     );
     let possible = state.placeable(ai_player);
-    let mut possible: Vec<_> = possible
-        .into_iter()
-        .map(|play| {
-            let next = state.clone().place(play, ai_player).unwrap().0;
-            (play, eval(next, ai_player))
-        })
-        .collect();
-    possible.sort_by_key(|(_, score)| *score);
+    let mut possible: Vec<_> = possible.into_iter().collect();
+    possible.sort_by_cached_key(|&play| {
+        let next = state.clone().place(play, ai_player).unwrap().0;
+        eval(next, ai_player)
+    });
     possible.reverse();
     possible.truncate(width_lim);
     if rec == 0 {
@@ -114,18 +106,18 @@ fn predict_rec(
     }
     let mut play_score_map = possible
         .into_iter()
-        .map(|(init_ai_play, _)| {
+        .map(|init_ai_play| {
             // FIXME: this probably contains some logic duplication, but I'm not smart enough to fix it
             let (after_ai_board, placed) = state.clone().place(init_ai_play, ai_player).unwrap();
             assert_ne!(placed, 0);
             let human_plays = predict_rec(&after_ai_board, ai_player.flip(), 0, 1);
             let mut after_human = after_ai_board.clone();
-            if let Some((play, _)) = human_plays.first() {
+            if let Some(play) = human_plays.first() {
                 after_human = after_human.place(*play, ai_player.flip()).unwrap().0;
             }
             let next_ai_board = predict_rec(&after_human, ai_player, rec - 1, 2)
                 .first()
-                .map(|play| after_human.clone().place(play.0, ai_player).unwrap().0)
+                .map(|play| after_human.clone().place(*play, ai_player).unwrap().0)
                 .unwrap_or(after_human);
             (init_ai_play, eval(next_ai_board, ai_player))
         })
@@ -133,6 +125,9 @@ fn predict_rec(
     play_score_map.sort_by_key(|play_score| play_score.1);
     play_score_map.reverse();
     play_score_map
+        .into_iter()
+        .map(|play_score| play_score.0)
+        .collect()
 }
 
 #[cfg(test)]
