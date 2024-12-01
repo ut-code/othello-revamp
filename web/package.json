@@ -25,6 +25,7 @@
     "vite-plugin-wasm": "^3.3.0"
   },
   "dependencies": {
+    "@sveltejs/adapter-static": "^3.0.6",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.9",
