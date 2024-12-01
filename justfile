@@ -21,6 +21,7 @@ clean-wasm:
 build-wasm:
     if [ -d wasm/pkg ]; then rm -r wasm/pkg; fi
     cd wasm; wasm-pack build --release
+    cd wasm; rm pkg/.gitignore # HACK: read README
 build-web:
     cd web; pnpm run build
 build: build-wasm

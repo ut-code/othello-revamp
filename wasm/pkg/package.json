@@ -1,0 +1,26 @@
+{
+  "name": "boardgame-ai",
+  "type": "module",
+  "collaborators": [
+    "aster <137767097+aster-void@users.noreply.github.com>"
+  ],
+  "description": "Othello AI, revamped on Rust/WASM",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com:ut-code/othello-revamp"
+  },
+  "files": [
+    "boardgame_ai_bg.wasm",
+    "boardgame_ai.js",
+    "boardgame_ai_bg.js",
+    "boardgame_ai.d.ts"
+  ],
+  "main": "boardgame_ai.js",
+  "types": "boardgame_ai.d.ts",
+  "sideEffects": [
+    "./boardgame_ai.js",
+    "./snippets/*"
+  ]
+}
