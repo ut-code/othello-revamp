@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["wasm/", ".svelte-kit"]
+    "ignore": ["wasm/*", ".svelte-kit", "web/dist"]
   },
   "formatter": {
     "enabled": false
