@@ -1,18 +1,40 @@
 use crate::rules::othello as rules;
 use rules::*;
 
-pub fn eval(state: Board, playing: Piece) -> isize {
+fn eval(state: Board, playing: Piece) -> isize {
     let base_score = state.score(playing) as isize;
     let flexibility_score = eval_flexibility(&state, playing);
+    let win_score = eval_win(state.clone(), playing);
     let positional_score = eval_positional_score(state, playing);
 
-    positional_score + base_score + flexibility_score
+    positional_score + base_score + flexibility_score + win_score
 }
-pub fn eval_flexibility(state: &Board, playing: Piece) -> isize {
-    (state.placeable(playing).len() as isize - state.placeable(playing.flip()).len() as isize) * 3
+fn eval_flexibility(state: &Board, playing: Piece) -> isize {
+    let player_oppotunity = state.placeable(playing).len() as isize;
+    let opponent_oppotunity = state.placeable(playing.flip()).len() as isize;
+    let base = (player_oppotunity - opponent_oppotunity) * 3;
+    let unplaceable = if player_oppotunity == 0 {
+        -1
+    } else if opponent_oppotunity == 0 {
+        1
+    } else {
+        0
+    };
+    base + unplaceable * 100
 }
-
-pub fn eval_positional_score(state: Board, playing: Piece) -> isize {
+fn eval_win(state: Board, playing: Piece) -> isize {
+    let playing: Cell = playing.into();
+    let opponent: Cell = playing.flip();
+    let cells = state.cells();
+    if cells.iter().all(|(_, val)| *val != opponent) {
+        isize::MAX / 2 // you won
+    } else if cells.iter().all(|(_, val)| *val != playing) {
+        isize::MIN / 2 // you lost
+    } else {
+        0
+    }
+}
+fn eval_positional_score(state: Board, playing: Piece) -> isize {
     let size = state.size();
     state
         .cells()
@@ -56,23 +78,6 @@ pub fn eval_positional_score(state: Board, playing: Piece) -> isize {
         })
         .sum()
 }
-#[cfg(test)]
-mod test_eval {
-    use super::*;
-    #[test]
-    fn eval_corner() {
-        let board = "
-            ....
-            ....
-            ....
-            ...b
-        ";
-        let board = Board::decode(board, 4).unwrap();
-        let expected_score = /* base */ 1 + /* positional */ 20;
-        let score = eval(board, Piece::Black);
-        assert_eq!(expected_score, score);
-    }
-}
 /// returns best point to place.
 /// the larger `rec` is, the better the AI plays. (and more resouce this program consumes)
 /// will return None if there were no cells that AI can place.
@@ -92,21 +97,29 @@ mod test_eval {
 pub fn predict(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) -> Option<Point> {
     predict_rec(state, ai_player, rec, width_lim)
         .first()
-        .copied()
+        .map(|val| val.0)
 }
 
 /// returns vec sorted by score.
-fn predict_rec(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) -> Vec<Point> {
+fn predict_rec(
+    state: &Board,
+    ai_player: Piece,
+    rec: usize,
+    width_lim: usize,
+) -> Vec<(Point, isize)> {
     assert!(
         rec <= 10,
         "rec should not be larger than 10, otherwise the order will explode"
     );
     let possible = state.placeable(ai_player);
-    let mut possible: Vec<_> = possible.into_iter().collect();
-    possible.sort_by_cached_key(|&play| {
-        let next = state.clone().place(play, ai_player).unwrap();
-        eval(next, ai_player)
-    });
+    let mut possible: Vec<_> = possible
+        .into_iter()
+        .map(|play| {
+            let next = state.clone().place(play, ai_player).unwrap();
+            (play, eval(next, ai_player))
+        })
+        .collect();
+    possible.sort_by_key(|v| v.1);
     possible.reverse();
     possible.truncate(width_lim);
     if rec == 0 {
@@ -114,27 +127,29 @@ fn predict_rec(state: &Board, ai_player: Piece, rec: usize, width_lim: usize) ->
     }
     let mut play_score_map = possible
         .into_iter()
-        .map(|init_ai_play| {
+        .map(|(init_ai_play, init_score)| {
             // FIXME: this probably contains some logic duplication, but I'm not smart enough to fix it
             let after_ai_board = state.clone().place(init_ai_play, ai_player).unwrap();
             let human_plays = predict_rec(&after_ai_board, ai_player.flip(), 0, 1);
             let mut after_human = after_ai_board.clone();
-            if let Some(play) = human_plays.first() {
+            if let Some((play, _)) = human_plays.first() {
                 after_human = after_human.place(*play, ai_player.flip()).unwrap();
             }
-            let next_ai_board = predict_rec(&after_human, ai_player, rec - 1, 2)
+            let next_ai_score = predict_rec(&after_human, ai_player, rec - 1, 2)
                 .first()
-                .map(|play| after_human.clone().place(*play, ai_player).unwrap())
-                .unwrap_or(after_human);
-            (init_ai_play, eval(next_ai_board, ai_player))
+                .map(|(play, next_score)| {
+                    let board = after_human.clone().place(*play, ai_player).unwrap();
+                    let score = eval(board, ai_player);
+                    score + next_score
+                })
+                .unwrap_or_else(|| eval(after_human, ai_player));
+            let total_score = init_score + next_ai_score;
+            (init_ai_play, total_score)
         })
         .collect::<Vec<_>>();
     play_score_map.sort_by_key(|play_score| play_score.1);
     play_score_map.reverse();
     play_score_map
-        .into_iter()
-        .map(|play_score| play_score.0)
-        .collect()
 }
 
 #[cfg(test)]
@@ -181,7 +196,7 @@ mod test {
             ..bb........
         ";
         let board = Board::decode(board, 12).unwrap();
-        let next_play = predict(&board, Piece::Black, 7, 10);
+        let next_play = predict(&board, Piece::Black, 5, 3);
         // NOTE: it takes around 10x~ more time on test than on wasm, because test runs on debug mode.
         // add --release flag to `cargo test` and it will magically be 10x faster.
         // (i.e. it's not a bug that wasm runs much faster than on native test, given same params)

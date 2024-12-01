@@ -90,7 +90,7 @@ pub enum Cell {
     White,
 }
 impl Cell {
-    fn flip(&self) -> Cell {
+    pub fn flip(&self) -> Cell {
         match self {
             Cell::Empty => Cell::Empty,
             Cell::Black => Cell::White,
