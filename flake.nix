@@ -19,6 +19,7 @@
           nodejs-slim_latest
           pnpm
           just
+          gnumake # only used on deploy env
           toolchain
           wasm-pack
           biome

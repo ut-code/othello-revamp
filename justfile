@@ -28,6 +28,8 @@ build: build-wasm
     cd web; pnpm i # it won't update types without this
     just build-web
 
+deploy:
+    make deploy
 test: test-wasm
 test-wasm:
     cd wasm; cargo test
