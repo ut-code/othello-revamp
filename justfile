@@ -1,5 +1,7 @@
 set export := true
+# SvelteKit の SSR で必要。
 NODE_OPTIONS := "--experimental-wasm-modules"
+
 setup:
     pnpm i --frozen-lockfile
     just build-wasm; # required because web/package.json depends on this
@@ -30,7 +32,6 @@ test: test-wasm
 test-wasm:
     cd wasm; cargo test
 dev:
-    @# Node.js の SSR で必要。
     cd web; pnpm dev
 preview:
     cd web; pnpm preview
