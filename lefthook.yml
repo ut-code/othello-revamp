@@ -21,3 +21,8 @@ pre-commit:
       glob: "*.go"
       run: cd wasm; cargo clippy --fix --allow-dirty -- -Dwarnings
       stage_fixed: true
+    sync-wasm-pkg:
+      tags: rust build
+      glob: "wasm/*"
+      run: just build-wasm
+      stage_fixed: true

@@ -20,7 +20,7 @@ clean-wasm:
 
 build-wasm:
     if [ -d wasm/pkg ]; then rm -r wasm/pkg; fi
-    cd wasm; wasm-pack build
+    cd wasm; wasm-pack build --release
 build-web:
     cd web; pnpm run build
 build: build-wasm
@@ -28,8 +28,6 @@ build: build-wasm
     cd web; pnpm i # it won't update types without this
     just build-web
 
-deploy:
-    make deploy
 test: test-wasm
 test-wasm:
     cd wasm; cargo test
