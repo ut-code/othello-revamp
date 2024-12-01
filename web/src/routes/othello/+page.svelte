@@ -31,6 +31,7 @@
   $effect(() => {
     if (turn === "ai") {
       setTimeout(() => {
+        if (turn !== "ai") return;
         play_ai();
         turn = "player";
       }, 500);
