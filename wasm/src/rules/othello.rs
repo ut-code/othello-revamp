@@ -147,6 +147,7 @@ impl Board {
     pub fn size(&self) -> usize {
         self.size
     }
+    // returns all cells (either Cell::Empty, Cell::Black, or Cell::White) in order
     pub fn cells(self) -> Vec<(Point, Cell)> {
         self.data
             .into_iter()

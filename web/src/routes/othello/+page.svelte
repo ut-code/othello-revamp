@@ -10,8 +10,8 @@
   import Board from "./Board.svelte";
 
   // states
-  let board_size = 12;
-  let strength = 10; // recommended: 1 ~ 5, can handle up to 7
+  let board_size = 8;
+  let strength = 5; // recommended: 1 ~ 5, can handle up to 10
   let board = $state(init_othello(board_size));
   let player = $state<Piece>(Piece.Black);
   let turn = $state<"player" | "ai">("player");

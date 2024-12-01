@@ -3,8 +3,18 @@ use rules::*;
 
 pub fn eval(state: Board, playing: Piece) -> isize {
     let base_score = state.score(playing) as isize;
+    let flexibility_score = eval_flexibility(&state, playing);
+    let positional_score = eval_positional_score(state, playing);
+
+    positional_score + base_score + flexibility_score
+}
+pub fn eval_flexibility(state: &Board, playing: Piece) -> isize {
+    (state.placeable(playing).len() as isize - state.placeable(playing.flip()).len() as isize) * 3
+}
+
+pub fn eval_positional_score(state: Board, playing: Piece) -> isize {
     let size = state.size();
-    let positional_score = state
+    state
         .cells()
         .into_iter()
         .map(|(point, cell)| {
@@ -24,16 +34,16 @@ pub fn eval(state: Board, playing: Piece) -> isize {
             // asked chat gpt for the scores. I'm not familiar with othello nor AI.
             let score = if squashed.x == 0 && squashed.y == 0 {
                 // corner
-                50
+                20
             } else if squashed.x <= 1 && squashed.y <= 1 {
                 // dangerous place around corner
-                -20
+                -5
             } else if squashed.x == 0 || squashed.y == 0 {
                 // side of the board, more stable than middle
-                10
+                3
             } else if squashed.x == 1 || squashed.y == 1 {
                 // it's bad according to chat gpt?
-                -5
+                -3
             } else {
                 0
             };
@@ -44,9 +54,7 @@ pub fn eval(state: Board, playing: Piece) -> isize {
             _ if cell == playing.into() => mul,
             _ => -mul,
         })
-        .sum::<isize>();
-
-    positional_score + base_score
+        .sum()
 }
 #[cfg(test)]
 mod test_eval {
@@ -60,7 +68,7 @@ mod test_eval {
             ...b
         ";
         let board = Board::decode(board, 4).unwrap();
-        let expected_score = 50 + 1;
+        let expected_score = /* base */ 1 + /* positional */ 20;
         let score = eval(board, Piece::Black);
         assert_eq!(expected_score, score);
     }
@@ -174,7 +182,7 @@ mod test {
         ";
         let board = Board::decode(board, 12).unwrap();
         let next_play = predict(&board, Piece::Black, 7, 10);
-        // NOTE: it takes around 10x~ more time on test than on WAsm, because test runs on debug mode.
+        // NOTE: it takes around 10x~ more time on test than on wasm, because test runs on debug mode.
         // add --release flag to `cargo test` and it will magically be 10x faster.
         // (i.e. it's not a bug that wasm runs much faster than on native test, given same params)
         let next_board = board.place(next_play.unwrap(), Piece::Black).unwrap();
