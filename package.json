@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "format": "prettier --write .",
-    "lint": "prettier --check ."
+    "lint": "prettier --check .",
+    "deploy": "cd web && pnpm install && pnpm run build"
   },
   "license": "MIT",
   "devDependencies": {
