@@ -5,7 +5,7 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "prettier --check .",
-    "deploy": "cd web && pnpm install && pnpm run build"
+    "deploy": "cd web && pnpm install && NODE_OPTIONS=--experimental-wasm-modules pnpm run build"
   },
   "license": "MIT",
   "devDependencies": {
