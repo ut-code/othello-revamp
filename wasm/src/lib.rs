@@ -4,7 +4,6 @@ mod utils;
 
 use ai::othello::predict;
 use rules::othello::{self as othello_rules, Board, Piece, Point};
-use utils::set_panic_hook;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -14,7 +13,6 @@ extern "C" {
 
 #[wasm_bindgen]
 pub fn greet() {
-    set_panic_hook();
     alert("Hello, wasm!");
 }
 
@@ -25,18 +23,15 @@ pub fn version() -> String {
 
 #[wasm_bindgen]
 pub fn init_othello(size: usize) -> Board {
-    set_panic_hook();
     othello_rules::Board::new(size)
 }
 
 #[wasm_bindgen]
 pub fn placeable(board: &Board, player: Piece) -> usize {
-    set_panic_hook();
     board.placeable(player).len()
 }
 #[wasm_bindgen]
 pub fn can_place(board: &Board, at: &Point, player: Piece) -> bool {
-    set_panic_hook();
     board.count_flips(*at, player) > 0
 }
 #[wasm_bindgen]
