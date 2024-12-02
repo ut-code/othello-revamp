@@ -21,6 +21,8 @@ jobs:
             wasm/target
           key: cargo-cache-${{ github.job }}-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
       - uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: 0.13.0
       - run: wasm-pack build --release
   test:
     name: "Test"
