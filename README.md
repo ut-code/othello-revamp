@@ -1,4 +1,7 @@
 ## NOTEs
 
-- wasm/pkg is tracked by git. why?:
-  because cloudflare doesn't provide rust toolchain, I've decided to build it locally and commit it to git vcs s.t. cloudflare can read it directly.
+- wasm/pkg が gitignore されていません。
+  理由: Cloudflare が wasm-pack を提供していないため、ローカルでビルドして Git で管理することで cloudflare で直接 wasm を読み取ることにしています。
+
+- CI が落ちてるよ！
+  知らん。直して。
