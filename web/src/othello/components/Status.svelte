@@ -5,14 +5,15 @@
     turn: "player" | "ai";
     human: Piece;
     blinking: boolean;
+    turnIsPlayable: boolean;
   };
-  const { board, turn, human, blinking }: Props = $props();
+  const { board, turn, human, blinking, turnIsPlayable }: Props = $props();
 </script>
 
 {#if turn === "player"}
-  <p class="text-lg {blinking && 'pulse'}">あなたの番です</p>
+  <p class="text-lg {blinking && 'pulse'}">あなたの番です {turnIsPlayable ? "" : "(パス)"}</p>
 {:else}
-  <p class="text-lg">AI の番です</p>
+  <p class="text-lg">AI の番です {turnIsPlayable ? "" : "(パス)"}</p>
 {/if}
 <p
   class={[

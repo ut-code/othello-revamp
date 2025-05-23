@@ -37,6 +37,8 @@
       }
     })(),
   );
+  const currentPlaying = $derived(turn === "player" ? player : ai_piece);
+  const turnIsPlayable = $derived(placeable(board, currentPlaying) > 0);
 
   // effects
   // play ai when it's ai's turn
@@ -51,9 +53,9 @@
   });
   // stuck prevention
   $effect(() => {
-    if (turn === "player" && !placeable(board, player)) {
+    if (!placeable(board, currentPlaying)) {
       setTimeout(() => {
-        turn = "ai";
+        turn = turn === "player" ? "ai" : "player";
       }, 1000);
     }
   });
@@ -144,7 +146,7 @@
 <h1 class="mb-20 text-5xl font-bold">Othello AI</h1>
 
 <div class="mx-auto w-fit">
-  <Status {board} {turn} human={player} blinking={turnBlinking} />
+  <Status {board} {turn} human={player} blinking={turnBlinking} {turnIsPlayable} />
   <Board
     {board}
     onclick={(p: Point) => play_player(p)}
