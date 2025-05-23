@@ -72,3 +72,8 @@ pub fn generate_ai_play(board: &Board, ai_player: Piece, strength: usize) -> Boa
         None => board.clone(),
     }
 }
+
+#[wasm_bindgen]
+pub fn score(board: &Board, player: Piece) -> usize {
+    board.score(player)
+}

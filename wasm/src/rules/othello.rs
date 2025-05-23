@@ -19,6 +19,12 @@ pub struct Point {
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct OutOfBoundaryError();
+impl From<OutOfBoundaryError> for String {
+    fn from(_: OutOfBoundaryError) -> Self {
+        "out of boundary".to_string()
+    }
+}
+
 impl Point {
     pub fn new(x: usize, y: usize) -> Self {
         Point { x, y }
@@ -31,6 +37,7 @@ impl Point {
         Ok(res)
     }
 }
+
 #[wasm_bindgen]
 impl Point {
     pub fn create(x: usize, y: usize) -> Point {
@@ -141,12 +148,21 @@ impl Board {
             .join(",");
         js_sys::JSON::parse(&format!("[{}]", data)).unwrap()
     }
-}
 
-impl Board {
     pub fn size(&self) -> usize {
         self.size
     }
+
+    pub fn score(&self, player: Piece) -> usize {
+        let player_cell: Cell = player.into();
+        self.data
+            .iter()
+            .map(|row| row.iter().filter(|&&cell| cell == player_cell).count())
+            .sum()
+    }
+}
+
+impl Board {
     // returns all cells (either Cell::Empty, Cell::Black, or Cell::White) in order
     pub fn cells(self) -> Vec<(Point, Cell)> {
         self.data
@@ -161,23 +177,24 @@ impl Board {
             .collect::<Vec<_>>()
             .concat()
     }
-    /// primitive opration. doesn't do anything other than setting the pice.
+    /// primitive operation. doesn't do anything other than setting the piece.
     /// returns Err iff at is out of boundary
-    pub fn set(&mut self, at: Point, cell: impl Into<Cell>) -> Result<(), OutOfBoundaryError> {
+    pub fn set(&mut self, at: Point, cell: Cell) -> Result<(), String> {
         let row = self.data.get_mut(at.y).ok_or(OutOfBoundaryError())?;
         if row.len() <= at.x {
-            return Err(OutOfBoundaryError());
+            return Err(OutOfBoundaryError().into());
         }
         row[at.x] = cell.into();
         Ok(())
     }
-    pub fn get(&self, at: Point) -> Result<Cell, OutOfBoundaryError> {
-        self.data
+    pub fn get(&self, at: Point) -> Result<Cell, String> {
+        Ok(self
+            .data
             .get(at.y)
             .ok_or(OutOfBoundaryError())?
             .get(at.x)
-            .ok_or(OutOfBoundaryError())
-            .copied()
+            .ok_or(OutOfBoundaryError())?
+            .to_owned())
     }
     pub fn new(size: usize) -> Self {
         assert!(size % 2 == 0, "size must be divisible by 2");
@@ -186,13 +203,13 @@ impl Board {
             size,
             data: vec![vec![Cell::Empty; size]; size],
         };
-        new.set(Point::new(size / 2 - 1, size / 2 - 1), Piece::Black)
+        new.set(Point::new(size / 2 - 1, size / 2 - 1), Cell::Black)
             .expect("this shouldn't happen");
-        new.set(Point::new(size / 2 - 1, size / 2), Piece::White)
+        new.set(Point::new(size / 2 - 1, size / 2), Cell::White)
             .expect("this shouldn't happen");
-        new.set(Point::new(size / 2, size / 2 - 1), Piece::White)
+        new.set(Point::new(size / 2, size / 2 - 1), Cell::White)
             .expect("this shouldn't happen");
-        new.set(Point::new(size / 2, size / 2), Piece::Black)
+        new.set(Point::new(size / 2, size / 2), Cell::Black)
             .expect("this shouldn't happen");
         new
     }
@@ -234,7 +251,7 @@ impl Board {
                 kind: PlaceErrorKind::AlreadyOccupied,
             });
         }
-        self.set(at, piece).unwrap(); // shouldn't panic, as it would be already be return beforehand
+        self.set(at, piece.into()).unwrap(); // shouldn't panic, as it would be already be return beforehand
         let mut count = 0;
         for dir in EIGHT_DIRECTIONS.iter().map(|&(x, y)| Direction { x, y }) {
             count += flip_in_direction(&mut self, at, piece, dir);
@@ -339,13 +356,6 @@ impl Board {
                 .collect::<Vec<String>>()
                 .join("\n")
             + "\n"
-    }
-    pub fn score(&self, player: Piece) -> usize {
-        let player_cell: Cell = player.into();
-        self.data
-            .iter()
-            .map(|row| row.iter().filter(|&&cell| cell == player_cell).count())
-            .sum()
     }
 
     /// ```rust
@@ -533,6 +543,7 @@ impl From<PlaceError> for String {
         )
     }
 }
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DecodeError {
     UnknownChar(char),
@@ -545,6 +556,20 @@ pub enum DecodeError {
         expected: usize,
         got: usize,
     },
+}
+
+impl From<DecodeError> for JsValue {
+    fn from(error: DecodeError) -> Self {
+        match error {
+            DecodeError::UnknownChar(c) => format!("Unknown character: {}", c).into(),
+            DecodeError::UnmatchedOverallLength { expected, got } => {
+                format!("Expected {} rows, got {}", expected, got).into()
+            }
+            DecodeError::UnmatchedLocalLength { at, expected, got } => {
+                format!("Row {} expected {} columns, got {}", at, expected, got).into()
+            }
+        }
+    }
 }
 
 // returns pieces that were flipped
@@ -563,7 +588,7 @@ pub fn flip_in_direction(b: &mut Board, at: Point, piece: Piece, direction: Dire
         if cell.flip() != piece.into() {
             break;
         }
-        b.set(pos, piece).unwrap(); // it's safe to unwrap this
+        b.set(pos, piece.into()).unwrap(); // it's safe to unwrap this
         flipped += 1;
     }
     flipped

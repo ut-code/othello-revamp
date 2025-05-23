@@ -313,6 +313,17 @@ export function generate_ai_play(board, ai_player, strength) {
 }
 
 /**
+ * @param {Board} board
+ * @param {Piece} player
+ * @returns {number}
+ */
+export function score(board, player) {
+    _assertClass(board, Board);
+    const ret = wasm.score(board.__wbg_ptr, player);
+    return ret >>> 0;
+}
+
+/**
  * @enum {0 | 1 | 2}
  */
 export const Cell = Object.freeze({
@@ -374,6 +385,21 @@ export class Board {
     get_data() {
         const ret = wasm.board_get_data(this.__wbg_ptr);
         return takeObject(ret);
+    }
+    /**
+     * @returns {number}
+     */
+    size() {
+        const ret = wasm.board_size(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * @param {Piece} player
+     * @returns {number}
+     */
+    score(player) {
+        const ret = wasm.board_score(this.__wbg_ptr, player);
+        return ret >>> 0;
     }
 }
 

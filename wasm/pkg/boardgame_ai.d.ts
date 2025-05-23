@@ -21,6 +21,7 @@ export function count_score(board: Board): Scores;
  */
 export function place_at(board: Board, player: Piece, at: Point): Board;
 export function generate_ai_play(board: Board, ai_player: Piece, strength: number): Board;
+export function score(board: Board, player: Piece): number;
 export enum Cell {
   Empty = 0,
   Black = 1,
@@ -38,6 +39,8 @@ export class Board {
    * should return Array<Array<"." | "b" | "w">>
    */
   get_data(): any;
+  size(): number;
+  score(player: Piece): number;
   size: number;
 }
 export class PlaceError {
