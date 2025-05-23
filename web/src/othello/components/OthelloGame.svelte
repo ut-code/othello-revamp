@@ -144,8 +144,6 @@
   }
 </script>
 
-<h1 class="mb-20 text-5xl font-bold">Othello AI</h1>
-
 <div class="mx-auto w-fit">
   <Status {board} {turn} human={player} blinking={turnBlinking} {turnIsPlayable} />
   <Board

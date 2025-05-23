@@ -1,3 +1,9 @@
+<script lang="ts">
+  import NavBar from "~/toppage/NavBar.svelte";
+</script>
+
+<NavBar currentPage="/" />
+
 <h1 class="my-10 text-center text-4xl font-bold tracking-tight text-gray-900">
   Welcome to Boardgame AI!
 </h1>
