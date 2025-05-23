@@ -44,11 +44,12 @@
   // play ai when it's ai's turn
   $effect(() => {
     if (turn === "ai") {
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         if (turn !== "ai") return;
         play_ai();
         turn = "player";
       }, 500);
+      return () => clearTimeout(timeout);
     }
   });
   // stuck prevention
