@@ -5,3 +5,12 @@
 
 - CI が落ちてるよ！
   知らん。直して。
+
+## 開発の始め方
+
+```sh
+mise trust && mise install
+just setup
+just dev # start hot-reloading server (note that it doesn't hot reload rust code; just the frontend part)
+just build # build everything
+```

@@ -1,0 +1,13 @@
+[settings]
+idiomatic_version_file_enable_tools = ["rust"]
+
+[tools]
+node = "latest"
+pnpm = "latest"
+just = "latest"
+"aqua:rustwasm/wasm-pack" = "latest"
+"npm:@biomejs/biome" = "latest"
+lefthook = "latest"
+
+[hooks]
+postinstall = "lefthook install"

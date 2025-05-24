@@ -1,0 +1,52 @@
+[[tools."aqua:rustwasm/wasm-pack"]]
+version = "0.14.0"
+backend = "aqua:rustwasm/wasm-pack"
+"platforms.linux-arm64" = { checksum = "sha256:5941c7b05060440ff37ee50fe9009a408e63fa5ba607a3b0736f5a887ec5f2ca", url = "https://github.com/wasm-bindgen/wasm-pack/releases/download/v0.14.0/wasm-pack-v0.14.0-aarch64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:278a8d668085821f4d1a637bd864f1713f872b0ae3a118c77562a308c0abfe8d", url = "https://github.com/wasm-bindgen/wasm-pack/releases/download/v0.14.0/wasm-pack-v0.14.0-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:46b66072ee9912b53f83841aecb04479a60e0705f7bb8b6681b377a07a512a23", url = "https://github.com/wasm-bindgen/wasm-pack/releases/download/v0.14.0/wasm-pack-v0.14.0-x86_64-apple-darwin.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:46b66072ee9912b53f83841aecb04479a60e0705f7bb8b6681b377a07a512a23", url = "https://github.com/wasm-bindgen/wasm-pack/releases/download/v0.14.0/wasm-pack-v0.14.0-x86_64-apple-darwin.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:d484c8e8bcd9e8c30097fbac78b52dd159598f99d11e43a50f5d143b67c721f1", url = "https://github.com/wasm-bindgen/wasm-pack/releases/download/v0.14.0/wasm-pack-v0.14.0-x86_64-pc-windows-msvc.tar.gz"}
+
+[[tools.just]]
+version = "1.46.0"
+backend = "aqua:casey/just"
+"platforms.linux-arm64" = { checksum = "sha256:b81970c8247fa64cfb30d2a3da0e487e4253f9f2d01865ed5e7d53cdc7b02188", url = "https://github.com/casey/just/releases/download/1.46.0/just-1.46.0-aarch64-unknown-linux-musl.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:79966e6e353f535ee7d1c6221641bcc8e3381c55b0d0a6dc6e54b34f9db36eaa", url = "https://github.com/casey/just/releases/download/1.46.0/just-1.46.0-x86_64-unknown-linux-musl.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:438eaf6468a115aa7db93e501cc7e3272f453f6b7083be3863adfab546b23358", url = "https://github.com/casey/just/releases/download/1.46.0/just-1.46.0-aarch64-apple-darwin.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:ec54dd60ac876261b7318f1852ef9c0319fede1e5a73c14f56d908a8edf595b8", url = "https://github.com/casey/just/releases/download/1.46.0/just-1.46.0-x86_64-apple-darwin.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:f0acf3f8ccbcf360b481baae9cae4c921774c89d5d932012481d3e0bda78ab39", url = "https://github.com/casey/just/releases/download/1.46.0/just-1.46.0-x86_64-pc-windows-msvc.zip"}
+
+[[tools.lefthook]]
+version = "2.1.1"
+backend = "aqua:evilmartians/lefthook"
+"platforms.linux-arm64" = { checksum = "sha256:46907f78fa64de6d47e4f4c6b80f9ad246a09c67262c00ba5a32c74217d7f5ea", url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.1/lefthook_2.1.1_Linux_aarch64.gz"}
+"platforms.linux-x64" = { checksum = "sha256:5d29942bb5954c59d67d8c37184411034e576ed2829e22b0a6d88bba934e4fbb", url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.1/lefthook_2.1.1_Linux_x86_64.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:efe16a83824d2fc0f95719102045263b0f6d61d3c998442a12763c285f8b49bc", url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.1/lefthook_2.1.1_MacOS_arm64.gz"}
+"platforms.macos-x64" = { checksum = "sha256:a73e790b9e7b7bc13810cb9f7d7945462f899165c25d14f39bc31d9a70427638", url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.1/lefthook_2.1.1_MacOS_x86_64.gz"}
+"platforms.windows-x64" = { checksum = "sha256:ac26892266ce98066c469d2db7feafe067009b9cff85786dae7605cf3be0db50", url = "https://github.com/evilmartians/lefthook/releases/download/v2.1.1/lefthook_2.1.1_Windows_x86_64.gz"}
+
+[[tools.node]]
+version = "25.6.1"
+backend = "core:node"
+"platforms.linux-arm64" = { checksum = "sha256:90fea701897ecb424aafa2824539476598437ad9f21e649732a85cc2d955d845", url = "https://nodejs.org/dist/v25.6.1/node-v25.6.1-linux-arm64.tar.gz"}
+"platforms.linux-x64" = { checksum = "sha256:3809fdbfd54829bad363b9db8e96ca3600509e2ff20ede74181cfc1ca8451ce3", url = "https://nodejs.org/dist/v25.6.1/node-v25.6.1-linux-x64.tar.gz"}
+"platforms.macos-arm64" = { checksum = "sha256:a80cb252d170a4730f78f5950cf19a46106f156e5886e5c1cc8c5602aea60243", url = "https://nodejs.org/dist/v25.6.1/node-v25.6.1-darwin-arm64.tar.gz"}
+"platforms.macos-x64" = { checksum = "sha256:3b68f847d9d8861c7c8bfef32c540d14f6ca18bfcbf5f6495a595b9529063a9b", url = "https://nodejs.org/dist/v25.6.1/node-v25.6.1-darwin-x64.tar.gz"}
+"platforms.windows-x64" = { checksum = "sha256:0ae2300cdf44c399b5b351edbefb3534d1342a6fabd64302ca8c8e2fb86b0445", url = "https://nodejs.org/dist/v25.6.1/node-v25.6.1-win-x64.zip"}
+
+[[tools."npm:@biomejs/biome"]]
+version = "2.4.13"
+backend = "npm:@biomejs/biome"
+
+[[tools.pnpm]]
+version = "10.33.2"
+backend = "aqua:pnpm/pnpm"
+"platforms.linux-arm64" = { checksum = "sha256:0828e5ee23be89d22bd53cc36e93c181ce9d5c47d75f9fe9bf4bdc7a65c66322", url = "https://github.com/pnpm/pnpm/releases/download/v10.33.2/pnpm-linux-arm64"}
+"platforms.linux-x64" = { checksum = "sha256:39d7b6600239712bc9581ea219b17ffef46ba60998779cb717be2e068be029ef", url = "https://github.com/pnpm/pnpm/releases/download/v10.33.2/pnpm-linux-x64"}
+"platforms.macos-arm64" = { checksum = "sha256:a99a4d5d0e6bd3728949c24ff74a2f2f2d07f73bc48fd308e4eea75d8e72acdc", url = "https://github.com/pnpm/pnpm/releases/download/v10.33.2/pnpm-macos-arm64"}
+"platforms.macos-x64" = { checksum = "sha256:3b66abb865f4e7a82393861f0f3784d67a704a31a4021739874d4b7910793dca", url = "https://github.com/pnpm/pnpm/releases/download/v10.33.2/pnpm-macos-x64"}
+"platforms.windows-x64" = { checksum = "sha256:3d1af71e9da7081efd58f95942e1f7e2107bf8fcdae03eb2331c0b6cea59510b", url = "https://github.com/pnpm/pnpm/releases/download/v10.33.2/pnpm-win-x64.exe"}
+
+[[tools.rust]]
+version = "stable"
+backend = "core:rust"
