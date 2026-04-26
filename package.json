@@ -5,7 +5,7 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "prettier --check .",
-    "deploy": "cd web && pnpm install && NODE_OPTIONS=--experimental-wasm-modules pnpm run build"
+    "deploy": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable --target wasm32-unknown-unknown && . \"$HOME/.cargo/env\" && pnpm install && pnpm exec wasm-pack build --release wasm && rm -f wasm/pkg/.gitignore && cd web && pnpm install && NODE_OPTIONS=--experimental-wasm-modules pnpm run build"
   },
   "license": "MIT",
   "devDependencies": {
