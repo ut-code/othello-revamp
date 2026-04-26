@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
-@plugin "daisyui";
+/* workaround: tailwindcss 4.2.3+ の vite plugin が `@plugin "daisyui"` を
+   browser export (daisyui.css) に解決してビルドが落ちる。Tailwind 4.2.5 で
+   修正される予定。リリースされたら "daisyui" に戻す。
+   https://github.com/tailwindlabs/tailwindcss/pull/19949 */
+@plugin "daisyui/index.js";
 
 @theme {
   --color-board-green: rgb(128, 216, 154);

@@ -31,6 +31,13 @@
       "quoteStyle": "double"
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": false,
+      "allowWrongLineComments": false,
+      "tailwindDirectives": true
+    }
+  },
   "overrides": [
     {
       "includes": ["**/*.svelte"],
