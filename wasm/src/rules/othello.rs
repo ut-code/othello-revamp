@@ -184,7 +184,7 @@ impl Board {
         if row.len() <= at.x {
             return Err(OutOfBoundaryError().into());
         }
-        row[at.x] = cell.into();
+        row[at.x] = cell;
         Ok(())
     }
     pub fn get(&self, at: Point) -> Result<Cell, String> {
@@ -197,7 +197,7 @@ impl Board {
             .to_owned())
     }
     pub fn new(size: usize) -> Self {
-        assert!(size % 2 == 0, "size must be divisible by 2");
+        assert!(size.is_multiple_of(2), "size must be divisible by 2");
         assert!(size < 255, "size should not be larger than 255");
         let mut new = Self {
             size,
@@ -578,10 +578,7 @@ pub fn flip_in_direction(b: &mut Board, at: Point, piece: Piece, direction: Dire
         return 0;
     };
     let mut flipped = 0;
-    loop {
-        let Ok(pos) = at.move_for(direction.times(flipped as isize + 1)) else {
-            break;
-        };
+    while let Ok(pos) = at.move_for(direction.times(flipped as isize + 1)) {
         let Ok(cell) = b.get(pos) else {
             break;
         };
