@@ -5,6 +5,8 @@ on:
 defaults:
   run:
     working-directory: "web"
+env:
+  NODE_OPTIONS: --experimental-wasm-modules
 
 jobs:
   check:
