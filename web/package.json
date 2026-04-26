@@ -31,5 +31,10 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.2.4",
     "boardgame-ai": "file:../wasm/pkg"
+  },
+  "pnpm": {
+    "overrides": {
+      "cookie": "^0.7.2"
+    }
   }
 }

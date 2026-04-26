@@ -5,13 +5,13 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "prettier --check .",
-    "deploy": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable --target wasm32-unknown-unknown && . \"$HOME/.cargo/env\" && pnpm install && pnpm exec wasm-pack build --release wasm && rm -f wasm/pkg/.gitignore && cd web && pnpm install && NODE_OPTIONS=--experimental-wasm-modules pnpm run build"
+    "deploy": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable --target wasm32-unknown-unknown && . \"$HOME/.cargo/env\" && cargo install wasm-pack --locked && pnpm install && wasm-pack build --release wasm && rm -f wasm/pkg/.gitignore && cd web && pnpm install && NODE_OPTIONS=--experimental-wasm-modules pnpm run build"
   },
   "license": "MIT",
   "devDependencies": {
     "prettier": "^3.8.3",
     "prettier-plugin-svelte": "^3.5.1",
     "prettier-plugin-tailwindcss": "^0.7.3",
-    "wasm-pack": "^0.14.0"
+    "svelte": "^5.55.5"
   }
 }
