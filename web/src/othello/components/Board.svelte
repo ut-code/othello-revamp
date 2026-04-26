@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { type Board, type Piece, Point, can_place } from "boardgame-ai";
+  import { type Board, can_place, type Piece, Point } from "boardgame-ai";
+
   type Props = {
     board: Board;
     onclick: (pos: Point) => void;

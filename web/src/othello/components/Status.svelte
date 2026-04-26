@@ -1,5 +1,6 @@
 <script lang="ts">
   import { type Board, Piece } from "boardgame-ai";
+
   type Props = {
     board: Board;
     turn: "player" | "ai";

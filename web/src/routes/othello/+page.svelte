@@ -5,6 +5,6 @@
 
 <Navbar currentPage="/othello" />
 
-<h1 class="mb-20 mt-10 text-5xl font-bold">Othello AI</h1>
+<h1 class="mt-10 mb-20 text-5xl font-bold">Othello AI</h1>
 
 <OthelloGame />

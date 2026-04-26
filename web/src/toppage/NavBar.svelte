@@ -1,5 +1,6 @@
 <script lang="ts">
   import NavBar from "~/lib/NavBar.svelte";
+
   type Props = {
     currentPage: string;
   };
